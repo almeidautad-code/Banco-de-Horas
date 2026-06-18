@@ -1,145 +1,171 @@
-# Banco de Horas
+# Banco de Horas — Work Hours Tracker
 
-> Trabalho a part-time no gabinete de informática da minha universidade com horário flexível e senti a necessidade de ter uma forma simples de registar as minhas horas diárias — para saber facilmente quantas horas tenho a mais ou a menos no final do mês.
+> I work part-time at my university's IT department with a flexible schedule and felt the need for a simple way to track my daily working hours — to easily know how many hours I have in surplus or deficit at the end of the month.
 >
-> Sou estudante de Engenharia Informática no 1º ano e, com ajuda de IA (Claude da Anthropic), consegui criar esta aplicação do zero: uma web app completa construída em Google Apps Script + Google Sheets, sem servidores externos nem custos de infraestrutura.
+> I'm a first-year Computer Engineering student and, with the help of AI (Claude by Anthropic), I built this application from scratch: a complete web app built on Google Apps Script + Google Sheets, with no external servers or infrastructure costs.
 >
-> O projeto cresceu de um simples registo de horas para uma ferramenta com painel de administração, pedidos de folga, relatórios em PDF, envio automático de resumos por email, e muito mais.
+> The project grew from a simple hours log into a full tool with an admin panel, leave requests, PDF reports, automatic email summaries, and much more.
 
 ---
 
-Web app de registo e gestão de horas de trabalho, construída em **Google Apps Script + Google Sheets**.
+## Screenshots
 
-Desenvolvida para uso interno — sem base de dados externa, sem servidor próprio. Tudo corre dentro do Google Workspace.
+### Login
+![Login](screenshots/screenshot-login.png)
+
+### User Calendar
+![Calendar](screenshots/screenshot-calendar.png)
+
+### Statistics
+![Statistics](screenshots/screenshot-statistics.png)
+
+### Admin Panel — Overview
+![Admin Overview](screenshots/screenshot-admin-overview.png)
+
+### Admin Panel — Schedule Lock
+![Admin Lock](screenshots/screenshot-admin-lock.png)
+
+### Admin Panel — Export
+![Admin Export](screenshots/screenshot-admin-export.png)
+
+### Admin Panel — Users
+![Admin Users](screenshots/screenshot-admin-users.png)
+
+### Settings
+![Settings](screenshots/screenshot-settings.png)
+
+### Monthly Email Summary
+![Email](screenshots/screenshot-email.png)
 
 ---
 
-## Funcionalidades
+## Features
 
-- ✅ Registo diário de horas (até 3 períodos por dia)
-- 📊 Saldo acumulado, estatísticas e gráfico donut
-- 🏖️ Pedidos de folga com aprovação pelo admin
-- 🔒 Admin pode trancar horários ou marcar folga obrigatória
-- 💬 Comentários por dia (partilhados entre funcionário e admin)
-- 📧 Resumo por email (semanal, mensal ou anual) com PDF em anexo
-- 📄 Exportar relatório em TXT ou PDF (por período e funcionário)
-- 👤 Painel admin com calendário, estatísticas e gestão de utilizadores
-- 🔁 Desfazer/refazer alterações
-- 📱 Interface responsiva (mobile)
-- 🔐 Sessão persistente com `localStorage`
+- ✅ Daily time logging (up to 3 periods per day)
+- 📊 Accumulated balance, statistics and donut chart
+- 🏖️ Leave requests with admin approval
+- 🔒 Admin can lock schedules or mark mandatory leave
+- 💬 Comments per day (shared between employee and admin)
+- 📧 Email summary (weekly, monthly or yearly) with PDF attachment
+- 📄 Export reports as TXT or PDF (by period and employee)
+- 👤 Admin panel with calendar, statistics and user management
+- 🔁 Undo/redo changes
+- 📱 Responsive interface (mobile)
+- 🔐 Persistent session with `localStorage`
 
 ---
 
-## Requisitos
+## Requirements
 
-- Conta Google (pessoal ou Workspace)
+- Google account (personal or Workspace)
 - Google Sheets
 - Google Apps Script
 
 ---
 
-## Instalação
+## Installation
 
-### 1. Criar a Google Sheet
+### 1. Create the Google Sheet
 
-1. Cria uma nova Google Sheet em [sheets.google.com](https://sheets.google.com)
-2. Abre o menu **Extensões → Apps Script**
-3. Cola o conteúdo de `Code.gs` no editor
-4. Cola o conteúdo de `index.html` num novo ficheiro HTML (`Ficheiro → Novo → Ficheiro HTML`)
+1. Create a new Google Sheet at [sheets.google.com](https://sheets.google.com)
+2. Open the menu **Extensions → Apps Script**
+3. Paste the contents of `Code.gs` into the editor
+4. Paste the contents of `index.html` into a new HTML file (**File → New → HTML file**)
 
-### 2. Configurar
+### 2. Configure
 
-No início de `Code.gs`, ajusta as constantes:
-
-```javascript
-const START_DATE  = '2026-06-01';  // data de início do sistema (YYYY-MM-DD)
-const DAILY_MINS  = 240;           // carga diária em minutos (ex: 240 = 4h, 480 = 8h)
-```
-
-Na função `initializeSheets`, substitui o email e password do admin inicial:
+At the top of `Code.gs`, adjust the constants:
 
 ```javascript
-[['admin@example.com', 'Administrador', 'changeme123', 'admin', true, '', '']]
+const START_DATE  = '2026-06-01';  // system start date (YYYY-MM-DD)
+const DAILY_MINS  = 240;           // daily workload in minutes (e.g. 240 = 4h, 480 = 8h)
 ```
 
-> ⚠️ **Muda a password após o primeiro login** nas definições do perfil.
-
-Se a tua cidade tem um feriado municipal específico, edita em `getPortugueseHolidays`:
+In the `initializeSheets` function, replace the initial admin email and password:
 
 ```javascript
-map[fmtKey(year, 6, 24)] = 'Feriado Municipal'; // ajusta a data e o nome
+[['admin@example.com', 'Administrator', 'changeme123', 'admin', true, '', '']]
 ```
 
-### 3. Inicializar
+> ⚠️ **Change the password after your first login** in the profile settings.
 
-1. No Apps Script, corre a função `setupSpreadsheet` uma vez (menu **Executar**)
-2. Aceita as permissões pedidas pelo Google
-3. Implementa a app: **Implementar → Nova implementação → Aplicação Web**
-   - Executar como: **Eu**
-   - Quem tem acesso: **Qualquer pessoa** (ou só quem tem o link)
-4. Copia o URL gerado — é o link da app
+If your city has a specific public holiday, edit it in `getPortugueseHolidays`:
+
+```javascript
+map[fmtKey(year, 6, 24)] = 'Local Holiday'; // adjust date and name
+```
+
+### 3. Initialize
+
+1. In Apps Script, run the `setupSpreadsheet` function once (**Run** menu)
+2. Accept the permissions requested by Google
+3. Deploy the app: **Deploy → New deployment → Web App**
+   - Execute as: **Me**
+   - Who has access: **Anyone** (or anyone with the link)
+4. Copy the generated URL — that's your app link
 
 ---
 
-## Estrutura
+## Structure
 
 ```
-Code.gs       — lógica de servidor (Google Apps Script)
-index.html    — interface web (HTML + CSS + JS, num único ficheiro)
+Code.gs       — server-side logic (Google Apps Script)
+index.html    — web interface (HTML + CSS + JS, single file)
 ```
 
-Os dados ficam guardados em folhas dentro da Google Sheet:
+Data is stored in sheets inside the Google Sheet:
 
-| Folha     | Conteúdo                          |
+| Sheet     | Contents                          |
 |-----------|-----------------------------------|
-| Users     | Utilizadores e passwords          |
-| Entries   | Registos diários de horas         |
-| Comments  | Comentários por dia               |
-| Closed    | Períodos fechados (pausas)        |
-| Invited   | Emails convidados (pré-registo)   |
+| Users     | Users and passwords               |
+| Entries   | Daily time records                |
+| Comments  | Per-day comments                  |
+| Closed    | Closed periods (breaks/holidays)  |
+| Invited   | Invited emails (pre-registration) |
 
 ---
 
-## Segurança
+## Security
 
-- Passwords guardadas em texto simples na Google Sheet (sem hash) — adequado para uso interno, não recomendado para dados sensíveis
-- Acesso à Sheet controlado pelas permissões do Google Drive
-- A app corre sob a conta do proprietário do script — sem exposição de credenciais externas
+- Passwords stored as plain text in Google Sheet (no hashing) — suitable for internal use, not recommended for sensitive data
+- Sheet access controlled by Google Drive permissions
+- The app runs under the script owner's account — no external credentials exposed
 
 ---
 
-## O que aprendi ao longo do projeto
+## What I Learned
 
-Este projeto foi o meu primeiro contacto real com desenvolvimento web e programação do lado do servidor. Aqui estão algumas das principais dificuldades que encontrei e o que aprendi com elas:
+This project was my first real contact with web development and server-side programming. Here are some of the main challenges I faced and what I learned from them:
 
-### Google Apps Script e Google Sheets como plataforma
-Aprendi que o Google Apps Script corre no servidor do Google e comunica com a página web através de `google.script.run` — o que implica que cada chamada ao servidor demora 1 a 3 segundos. Perceber isto foi fundamental para entender porque a app era lenta e como otimizá-la.
+### Google Apps Script and Google Sheets as a platform
+I learned that Google Apps Script runs on Google's servers and communicates with the web page through `google.script.run` — meaning each server call takes 1 to 3 seconds. Understanding this was key to knowing why the app was slow and how to optimize it.
 
-Descobri também que o Google Sheets converte automaticamente valores de hora (ex: `"09:00"`) em objetos `Date`, o que causou um bug difícil de detetar: a resposta do servidor chegava `null` ao cliente. A solução foi formatar explicitamente todos os campos de hora antes de os devolver.
+I also discovered that Google Sheets automatically converts time values (e.g. `"09:00"`) into `Date` objects, which caused a hard-to-detect bug: the server response was arriving as `null` on the client. The fix was to explicitly format all time fields before returning them.
 
-### Performance e otimização
-Uma das maiores aprendizagens foi perceber que cada leitura de uma folha do Sheets é uma operação lenta. Ao início, o código lia a mesma folha 3 vezes para obter dados diferentes (entradas, hora mínima, hora máxima). Aprendi a consolidar essas leituras numa só função, o que reduziu significativamente o tempo de carregamento.
+### Performance and optimization
+One of the biggest lessons was realizing that each Sheets read is a slow operation. Initially, the code read the same sheet 3 times to get different data (entries, minimum time, maximum time). I learned to consolidate those reads into a single function, which significantly reduced load time.
 
-Aprendi também a usar o `CacheService` do Apps Script para guardar dados que raramente mudam (como a lista de utilizadores e pausas) durante 30 segundos, evitando releituras desnecessárias.
+I also learned to use Apps Script's `CacheService` to store rarely-changing data (like the user list and closed periods) for 30 seconds, avoiding unnecessary re-reads.
 
-### Gestão de estado no frontend
-Aprendi a diferença entre guardar dados no servidor (Google Sheets) e manter estado no cliente (variáveis JavaScript). Implementei `localStorage` para persistir a sessão do utilizador entre refreshes — sem isso, o utilizador teria de fazer login sempre que atualizasse a página.
+### Frontend state management
+I learned the difference between storing data on the server (Google Sheets) and maintaining state on the client (JavaScript variables). I implemented `localStorage` to persist the user session across page refreshes — without this, the user would have to log in every time they refreshed the page.
 
-### UX e decisões de design
-Ao longo do projeto fui percebendo que pequenas decisões de interface têm grande impacto na experiência. Por exemplo:
-- O auto-save (guardar automaticamente ao mudar cada hora) parecia conveniente mas tornava a app lenta — mudei para guardar só quando o utilizador clica "Guardar"
-- Os botões de desfazer/refazer decorativos no painel do admin confundiam porque pareciam clicáveis mas não faziam nada — removi-os
-- Os emojis nos botões do modal ficavam desalinhados — substituí por ícones SVG consistentes
+### UX and design decisions
+Throughout the project I realized that small interface decisions have a big impact on the experience. For example:
+- Auto-save (saving automatically on every time change) seemed convenient but made the app slow — I changed it to save only when the user clicks "Save"
+- Decorative undo/redo buttons in the admin panel were confusing because they looked clickable but did nothing — I removed them
+- Emoji buttons in the modal were misaligned — I replaced them with consistent SVG icons
 
-### Funcionalidades mais complexas
-- **Pedidos de folga com aprovação**: aprendi a gerir estados intermédios (`Pendente`, `Rejeitado`, `Aprovado`) tanto no servidor como no cliente, e a manter a interface sincronizada com esses estados
-- **Exportação de PDF**: descobri que o `DocumentApp` do Apps Script não suporta todos os métodos de formatação que a documentação sugere (ex: `body.setMargins` não existe). A solução foi gerar HTML estilizado com CSS e exportá-lo como PDF via `DriveApp`
-- **Envio de emails com HTML**: aprendi a usar `MailApp` para enviar emails formatados com tabelas e cores, e a anexar ficheiros PDF
+### More complex features
+- **Leave requests with approval**: I learned to manage intermediate states (`Pending`, `Rejected`, `Approved`) on both server and client, and keep the interface in sync with those states
+- **PDF export**: I discovered that `DocumentApp` in Apps Script doesn't support all the formatting methods the documentation suggests (e.g. `body.setMargins` doesn't exist). The solution was to generate styled HTML with CSS and export it as PDF via `DriveApp`
+- **HTML emails**: I learned to use `MailApp` to send formatted emails with tables and colors, and to attach PDF files
 
-### Segurança e boas práticas para publicação
-Antes de publicar no GitHub, aprendi a importância de remover dados sensíveis do código (emails reais, passwords, nome da instituição) e substituí-los por placeholders genéricos, para que qualquer pessoa possa usar o projeto sem expor informação privada.
+### Security and best practices for publishing
+Before publishing on GitHub, I learned the importance of removing sensitive data from the code (real emails, passwords, institution name) and replacing them with generic placeholders, so anyone can use the project without exposing private information.
+
 ---
 
-## Licença
+## License
 
-MIT — uso livre, sem garantias.
+MIT — free to use, no warranties.
