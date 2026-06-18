@@ -1,0 +1,15 @@
+# Ficheiros locais com dados reais — nunca publicar
+*.env
+config.local.gs
+secrets.gs
+
+# Backups e temporários
+*.bak
+*.tmp
+*.log
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db

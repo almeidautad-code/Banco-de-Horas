@@ -1,0 +1,2646 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <style>
+  :root{
+    --color-background-primary:#ffffff;
+    --color-background-secondary:#F4F3EE;
+    --color-background-danger:#FCEBEB;
+    --color-border-tertiary:#E5E3DC;
+    --color-border-secondary:#D8D5CC;
+    --color-text-primary:#23221F;
+    --color-text-secondary:#76746C;
+    --color-text-danger:#A32D2D;
+    --border-radius-md:8px;
+    --border-radius-lg:14px;
+    --font-sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--color-background-secondary);}
+  .app{max-width:520px;margin:0 auto;padding:1.5rem 1rem;font-family:var(--font-sans);}
+  .card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:1.25rem;}
+  .screen{display:none;}.screen.active{display:block;}
+  .session-loading{position:fixed;inset:0;background:var(--color-background-primary);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;z-index:300;}
+  .session-loading .logo-icon{font-size:32px;color:#185FA5;}
+  .session-loading p{font-size:13px;color:var(--color-text-secondary);}
+  .logo{text-align:center;margin-bottom:1.25rem;}
+  .logo .logo-icon{font-size:28px;color:#185FA5;}
+  .logo h1{font-size:17px;font-weight:500;color:var(--color-text-primary);margin-top:4px;}
+  .logo p{font-size:12px;color:var(--color-text-secondary);margin-top:2px;}
+  .field{margin-bottom:0.875rem;}
+  .field label{display:block;font-size:12px;color:var(--color-text-secondary);margin-bottom:5px;}
+  .field input{width:100%;padding:8px 11px;font-size:14px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-secondary);color:var(--color-text-primary);outline:none;}
+  .field input:focus{border-color:#185FA5;box-shadow:0 0 0 2px rgba(24,95,165,0.12);}
+  .btn-primary{width:100%;padding:9px;font-size:14px;font-weight:500;border:none;border-radius:var(--border-radius-md);background:#185FA5;color:#fff;cursor:pointer;margin-bottom:6px;}
+  .btn-primary:hover{background:#0C447C;}
+  .btn-primary:disabled{opacity:0.6;cursor:default;}
+  .btn-secondary{width:100%;padding:9px;font-size:14px;font-weight:500;border:0.5px solid #185FA5;border-radius:var(--border-radius-md);background:transparent;color:#185FA5;cursor:pointer;margin-bottom:6px;}
+  .btn-secondary:hover{background:#E6F1FB;}
+  .btn-link{width:100%;padding:6px;font-size:12px;border:none;background:none;color:var(--color-text-secondary);cursor:pointer;}
+  .btn-link:hover{color:#185FA5;}
+  .error-msg{font-size:12px;color:var(--color-text-danger);margin-top:6px;display:none;padding:7px 10px;background:var(--color-background-danger);border-radius:var(--border-radius-md);white-space:pre-line;}
+  .info-msg{font-size:12px;color:#0F6E56;margin-top:6px;display:none;padding:7px 10px;background:#EAF3DE;border-radius:var(--border-radius-md);white-space:pre-line;}
+  .nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;}
+  .nav-user{display:flex;align-items:center;gap:8px;cursor:pointer;padding:4px 8px;border-radius:var(--border-radius-md);transition:background 0.15s;}
+  .nav-user:hover{background:var(--color-background-secondary);}
+  .avatar{width:30px;height:30px;border-radius:50%;background:#E6F1FB;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;color:#185FA5;}
+  .avatar.admin{background:#EAF3DE;color:#3B6D11;}
+  .nav-name{font-size:14px;font-weight:500;color:var(--color-text-primary);}
+  .nav-hint{font-size:10px;color:var(--color-text-secondary);}
+  .nav-actions{display:flex;gap:6px;align-items:center;}
+  .btn-icon{padding:4px 8px;font-size:12px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:transparent;color:var(--color-text-secondary);cursor:pointer;}
+  .btn-icon:hover{background:var(--color-background-secondary);}
+  .btn-icon:disabled{opacity:0.35;cursor:not-allowed;}
+  .logout-btn{font-size:12px;color:var(--color-text-secondary);cursor:pointer;border:none;background:none;padding:4px 6px;border-radius:var(--border-radius-md);}
+  .logout-btn:hover{color:var(--color-text-danger);}
+
+  /* STATS */
+  .stats-panel{background:var(--color-background-secondary);border-radius:var(--border-radius-lg);padding:1rem;margin-bottom:1.25rem;border:0.5px solid var(--color-border-tertiary);}
+  .stats-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;}
+  .stats-title{font-size:13px;font-weight:500;color:var(--color-text-primary);}
+  .stats-toggle{display:flex;gap:4px;}
+  .stats-btn{padding:3px 10px;font-size:12px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:transparent;color:var(--color-text-secondary);cursor:pointer;}
+  .stats-btn.active{background:#185FA5;color:#fff;border-color:#185FA5;}
+  .donut-wrap{display:flex;align-items:center;gap:1.25rem;margin-bottom:1rem;}
+  .legend{display:flex;flex-direction:column;gap:8px;flex:1;}
+  .legend-item{display:flex;align-items:center;justify-content:space-between;}
+  .legend-left{display:flex;align-items:center;gap:6px;}
+  .legend-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+  .legend-label{font-size:12px;color:var(--color-text-secondary);}
+  .legend-val{font-size:12px;font-weight:500;}
+  .legend-pct{font-size:10px;color:var(--color-text-secondary);margin-left:4px;}
+  .sdivider{height:0.5px;background:var(--color-border-tertiary);margin:0.875rem 0;}
+  .bars-title{font-size:11px;color:var(--color-text-secondary);margin-bottom:0.625rem;}
+  .bar-row{display:flex;align-items:center;gap:6px;margin-bottom:6px;}
+  .bar-label{font-size:10px;color:var(--color-text-secondary);width:36px;text-align:right;flex-shrink:0;}
+  .bar-track{flex:1;height:7px;background:var(--color-background-primary);border-radius:4px;}
+  .bar-fill{height:100%;border-radius:4px;min-width:2px;}
+  .bar-val{font-size:10px;font-weight:500;width:40px;flex-shrink:0;text-align:right;}
+  .months-expand-btn{display:flex;align-items:center;gap:4px;font-size:11px;color:#185FA5;background:none;border:none;cursor:pointer;padding:2px 0;margin-top:2px;}
+  .pos{color:#0F6E56;}.neg{color:#A32D2D;}.zero{color:var(--color-text-secondary);}
+
+  .saldo-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1.25rem;}
+  .saldo-box{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:0.875rem;text-align:center;}
+  .saldo-box .lbl{font-size:11px;color:var(--color-text-secondary);margin-bottom:3px;}
+  .saldo-box .val{font-size:20px;font-weight:500;}
+  .saldo-box .lbl-sub{font-size:10px;color:var(--color-text-secondary);margin-top:2px;min-height:13px;}
+
+  /* MULTISEL BAR */
+  .multisel-bar{display:none;background:#185FA5;border-radius:var(--border-radius-md);padding:8px 12px;margin-bottom:0.875rem;align-items:center;justify-content:space-between;}
+  .multisel-bar.show{display:flex;}
+  .multisel-info{font-size:13px;color:#fff;font-weight:500;}
+  .multisel-actions{display:flex;gap:6px;}
+  .multisel-btn{padding:4px 10px;font-size:12px;border:0.5px solid rgba(255,255,255,0.4);border-radius:var(--border-radius-md);background:rgba(255,255,255,0.15);color:#fff;cursor:pointer;}
+  .multisel-btn:hover{background:rgba(255,255,255,0.25);}
+  .multisel-btn.cancel{background:transparent;}
+
+  .cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:0.875rem;position:relative;}
+  .cal-title-btn{font-size:13px;font-weight:500;color:var(--color-text-primary);background:none;border:none;cursor:pointer;padding:4px 8px;border-radius:var(--border-radius-md);display:flex;align-items:center;gap:4px;}
+  .cal-title-btn:hover{background:var(--color-background-secondary);}
+  .view-toggle{display:flex;gap:4px;}
+  .view-btn{padding:4px 10px;font-size:12px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:transparent;color:var(--color-text-secondary);cursor:pointer;}
+  .view-btn.active{background:#185FA5;color:#fff;border-color:#185FA5;}
+  .nav-btns{display:flex;gap:4px;}
+  .nav-btn{width:28px;height:28px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:transparent;color:var(--color-text-secondary);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;}
+  .nav-btn:hover{background:var(--color-background-secondary);}
+
+  .picker-overlay{display:none;position:fixed;inset:0;z-index:90;}
+  .picker-overlay.open{display:block;}
+  .picker-panel{position:absolute;top:calc(100% + 4px);left:50%;transform:translateX(-50%);background:var(--color-background-primary);border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-lg);padding:1rem;z-index:91;width:260px;box-shadow:0 4px 16px rgba(0,0,0,0.12);}
+  .picker-years{display:flex;gap:6px;margin-bottom:0.75rem;justify-content:center;}
+  .picker-year-btn{flex:1;padding:6px;font-size:13px;font-weight:500;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:transparent;color:var(--color-text-secondary);cursor:pointer;}
+  .picker-year-btn.active{background:#185FA5;color:#fff;border-color:#185FA5;}
+  .picker-months{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;}
+  .picker-month-btn{padding:7px 4px;font-size:12px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:transparent;color:var(--color-text-secondary);cursor:pointer;text-align:center;}
+  .picker-month-btn:hover{background:var(--color-background-secondary);}
+  .picker-month-btn.active{background:#185FA5;color:#fff;border-color:#185FA5;}
+
+  .week-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:0.75rem;}
+  .week-label{font-size:11px;color:var(--color-text-secondary);text-align:center;padding:3px 0;font-weight:500;}
+  .month-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:0.75rem;}
+  .month-label{font-size:11px;color:var(--color-text-secondary);text-align:center;padding:3px 0;font-weight:500;}
+
+  .day-cell{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:5px 4px;min-height:62px;cursor:pointer;transition:all 0.15s;position:relative;user-select:none;}
+  .day-cell:hover .tooltip{opacity:1;}
+  .day-cell:hover{border-color:#185FA5;}
+  .day-cell.today{border:2px solid #185FA5;background:#E6F1FB;}
+  .day-cell.today .day-num{color:#185FA5;font-weight:500;}
+  .day-cell.blocked{background:#F1EFE8;cursor:not-allowed;}
+  .day-cell.blocked:hover{border-color:var(--color-border-tertiary);}
+  .day-cell.over{background:#EAF3DE;border-color:#0F6E56;}
+  .day-cell.under{background:#FCEBEB;border-color:#A32D2D;}
+  .day-cell.exact{background:#EAF3DE;border-color:#0F6E56;}
+  .day-cell.folga{background:#FFF8E1;border-color:#F59E0B;}
+  .day-cell.selected{border:2px solid #185FA5!important;background:#C8DCF5!important;}
+  .day-cell.has-comment::after{content:'💬';position:absolute;bottom:3px;right:3px;font-size:9px;}
+  .day-cell.other-month{opacity:0.3;cursor:default;}
+  .day-cell.other-month:hover{border-color:var(--color-border-tertiary);}
+  .day-num{font-size:11px;color:var(--color-text-secondary);margin-bottom:2px;}
+  .day-hours{font-size:11px;font-weight:500;color:var(--color-text-primary);}
+  .day-delta{font-size:10px;}
+  .day-delta.pos{color:#0F6E56;}.day-delta.neg{color:#A32D2D;}.day-delta.zero{color:var(--color-text-secondary);}
+
+  .month-cell{border:0.5px solid var(--color-border-tertiary);border-radius:6px;padding:4px;min-height:50px;cursor:pointer;transition:all 0.15s;position:relative;user-select:none;}
+  .month-cell:hover .tooltip{opacity:1;}
+  .month-cell:hover{border-color:#185FA5;}
+  .month-cell.today{border:2px solid #185FA5;background:#E6F1FB;}
+  .month-cell.today .month-num{color:#185FA5;font-weight:500;}
+  .month-cell.other-month{opacity:0.3;cursor:default;}
+  .month-cell.other-month:hover{border-color:var(--color-border-tertiary);}
+  .month-cell.blocked{background:#F1EFE8;cursor:not-allowed;}
+  .month-cell.blocked:hover{border-color:var(--color-border-tertiary);}
+  .month-cell.over{background:#EAF3DE;border-color:#0F6E56;}
+  .month-cell.under{background:#FCEBEB;border-color:#A32D2D;}
+  .month-cell.exact{background:#EAF3DE;border-color:#0F6E56;}
+  .month-cell.folga{background:#FFF8E1;border-color:#F59E0B;}
+  .month-cell.selected{border:2px solid #185FA5!important;background:#C8DCF5!important;}
+  .month-cell.has-comment::after{content:'💬';position:absolute;bottom:2px;right:2px;font-size:8px;}
+  .month-num{font-size:11px;color:var(--color-text-secondary);}
+  .month-d{font-size:10px;font-weight:500;}
+  .month-d.pos{color:#0F6E56;}.month-d.neg{color:#A32D2D;}.month-d.zero{color:var(--color-text-secondary);}
+  .folga-day-label{font-size:10px;color:#D97706;}
+
+  .tooltip{position:absolute;bottom:calc(100% + 5px);left:50%;transform:translateX(-50%);background:#2C2C2A;color:#fff;font-size:10px;padding:5px 8px;border-radius:5px;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity 0.15s;z-index:50;line-height:1.4;}
+
+  .ctx-menu{position:fixed;background:var(--color-background-primary);border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);box-shadow:0 4px 16px rgba(0,0,0,0.12);z-index:200;overflow:hidden;display:none;min-width:160px;}
+  .ctx-menu.open{display:block;}
+  .ctx-item{display:flex;align-items:center;gap:8px;padding:9px 14px;font-size:13px;color:var(--color-text-primary);cursor:pointer;}
+  .ctx-item:hover{background:var(--color-background-secondary);}
+  .ctx-item.danger{color:var(--color-text-danger);}
+  .ctx-item.danger:hover{background:var(--color-background-danger);}
+  .ctx-sep{height:0.5px;background:var(--color-border-tertiary);}
+
+  .cmt-modal-wrap{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.35);align-items:center;justify-content:center;z-index:150;}
+  .cmt-modal-wrap.open{display:flex;}
+  .cmt-modal{background:var(--color-background-primary);border-radius:var(--border-radius-lg);border:0.5px solid var(--color-border-secondary);width:300px;max-width:90vw;padding:1.25rem;}
+  .cmt-modal h3{font-size:15px;font-weight:500;margin-bottom:0.875rem;color:var(--color-text-primary);}
+  .cmt-textarea{width:100%;padding:8px 10px;font-size:13px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-secondary);color:var(--color-text-primary);outline:none;resize:vertical;min-height:80px;font-family:inherit;}
+  .cmt-textarea:focus{border-color:#185FA5;}
+  .cmt-btns{display:flex;gap:8px;margin-top:0.875rem;}
+  .cmt-cancel{flex:1;padding:8px;font-size:13px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:transparent;color:var(--color-text-secondary);cursor:pointer;}
+  .cmt-save{flex:2;padding:8px;font-size:13px;font-weight:500;border:none;border-radius:var(--border-radius-md);background:#185FA5;color:#fff;cursor:pointer;}
+
+  .lock-badge{position:absolute;top:3px;right:3px;font-size:10px;line-height:1;z-index:2;}
+  .lock-modal-wrap{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.35);align-items:center;justify-content:center;z-index:150;}
+  .lock-modal-wrap.open{display:flex;}
+  .lock-modal{background:var(--color-background-primary);border-radius:var(--border-radius-lg);border:0.5px solid var(--color-border-secondary);width:320px;max-width:90vw;padding:1.25rem;}
+  .lock-modal h3{font-size:15px;font-weight:500;margin-bottom:0.25rem;color:var(--color-text-primary);}
+  .lock-modal .sub{font-size:12px;color:var(--color-text-secondary);margin-bottom:0.875rem;}
+
+  .admin-tabs{display:flex;gap:6px;margin-bottom:1.25rem;flex-wrap:wrap;justify-content:center;}
+  .tab-btn{flex:0 1 auto;padding:7px 12px;font-size:12px;font-weight:500;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:transparent;color:var(--color-text-secondary);cursor:pointer;white-space:nowrap;text-align:center;}
+  .tab-btn.active{background:#185FA5;color:#fff;border-color:#185FA5;}
+  .admin-overview{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1rem;}
+  .emp-card{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:1rem;border:0.5px solid var(--color-border-tertiary);cursor:pointer;transition:border-color 0.15s;}
+  .emp-card:hover{border-color:#185FA5;}
+  .emp-card .emp-name{font-size:13px;font-weight:500;color:var(--color-text-primary);margin-bottom:8px;display:flex;align-items:center;gap:6px;}
+  .emp-card .emp-row{display:flex;justify-content:space-between;font-size:12px;color:var(--color-text-secondary);margin-bottom:4px;}
+  .req-card{display:flex;align-items:center;justify-content:space-between;gap:8px;background:#FCF3D9;border:0.5px solid #F2C94C;border-radius:var(--border-radius-md);padding:0.75rem;margin-bottom:8px;}
+  .req-card .req-info{font-size:13px;color:var(--color-text-primary);}
+  .req-card .req-info .req-date{font-size:12px;color:var(--color-text-secondary);display:block;margin-top:2px;}
+  .req-btns{display:flex;gap:6px;flex-shrink:0;}
+  .req-btn{padding:6px 10px;font-size:12px;font-weight:500;border:none;border-radius:var(--border-radius-md);cursor:pointer;}
+  .req-approve{background:#16A34A;color:#fff;}
+  .req-reject{background:#DC2626;color:#fff;}
+  .admin-selector{display:flex;gap:6px;margin-bottom:1rem;flex-wrap:wrap;}
+  .sel-btn{flex:1;padding:6px;font-size:12px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:transparent;color:var(--color-text-secondary);cursor:pointer;}
+  .sel-btn.active{border-color:#185FA5;color:#185FA5;background:#E6F1FB;}
+
+  .closed-list{margin-bottom:1rem;}
+  .closed-item{display:flex;align-items:center;justify-content:space-between;padding:8px 10px;border:0.5px solid #B4B2A9;border-radius:var(--border-radius-md);margin-bottom:6px;background:#F1EFE8;}
+  .closed-item-name{font-size:13px;font-weight:500;color:#5F5E5A;}
+  .closed-item-dates{font-size:11px;color:#888780;}
+  .btn-remove-closed{padding:3px 7px;font-size:11px;border:0.5px solid #B4B2A9;border-radius:var(--border-radius-md);background:transparent;color:#5F5E5A;cursor:pointer;}
+  .add-closed-grid{display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:6px;align-items:end;}
+  .add-closed-grid input{padding:7px 9px;font-size:12px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-secondary);color:var(--color-text-primary);outline:none;}
+  .btn-add-closed{padding:7px 10px;font-size:13px;border:none;border-radius:var(--border-radius-md);background:#5F5E5A;color:#fff;cursor:pointer;}
+
+  .user-list{margin-bottom:1rem;}
+  .user-item{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);margin-bottom:6px;background:var(--color-background-secondary);}
+  .user-item-left{display:flex;flex-direction:column;gap:2px;}
+  .user-item-name{font-size:13px;font-weight:500;color:var(--color-text-primary);}
+  .user-item-email{font-size:11px;color:var(--color-text-secondary);}
+  .user-item-right{display:flex;align-items:center;gap:6px;}
+  .btn-remove{padding:4px 8px;font-size:11px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:transparent;color:var(--color-text-danger);cursor:pointer;}
+  .add-user-row{display:grid;grid-template-columns:1fr 1fr auto;gap:6px;align-items:end;}
+  .add-user-row input{padding:8px 10px;font-size:13px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-secondary);color:var(--color-text-primary);outline:none;}
+  .btn-add-user{padding:8px 12px;font-size:13px;font-weight:500;border:none;border-radius:var(--border-radius-md);background:#185FA5;color:#fff;cursor:pointer;}
+  .badge-admin{font-size:10px;background:#EAF3DE;color:#3B6D11;border-radius:var(--border-radius-md);padding:2px 7px;font-weight:500;}
+  .badge-pending{font-size:10px;background:#FAEEDA;color:#854F0B;border-radius:var(--border-radius-md);padding:2px 7px;font-weight:500;}
+  .badge-active{font-size:10px;background:#EAF3DE;color:#3B6D11;border-radius:var(--border-radius-md);padding:2px 7px;font-weight:500;}
+
+  .export-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+  .export-row label{font-size:13px;color:var(--color-text-secondary);}
+  .export-row select{padding:6px 10px;font-size:13px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-secondary);color:var(--color-text-primary);outline:none;}
+  .btn-export{width:100%;padding:9px;font-size:13px;font-weight:500;border:0.5px solid #0F6E56;border-radius:var(--border-radius-md);background:transparent;color:#0F6E56;cursor:pointer;margin-top:4px;}
+  .btn-export:hover{background:#EAF3DE;}
+
+  .divider{height:0.5px;background:var(--color-border-tertiary);margin:1rem 0;}
+  .step-indicator{display:flex;align-items:center;gap:8px;margin-bottom:1.25rem;}
+  .step{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;}
+  .step.active{background:#185FA5;color:#fff;}.step.done{background:#0F6E56;color:#fff;}.step.inactive{background:var(--color-background-secondary);color:var(--color-text-secondary);border:0.5px solid var(--color-border-secondary);}
+  .step-line{flex:1;height:0.5px;background:var(--color-border-secondary);}
+
+  .modal-wrap{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.35);align-items:center;justify-content:center;z-index:100;}
+  .modal-wrap.open{display:flex;}
+  .modal{background:var(--color-background-primary);border-radius:var(--border-radius-lg);border:0.5px solid var(--color-border-secondary);width:300px;max-width:90vw;overflow:hidden;}
+  .modal-topbar{display:flex;align-items:center;justify-content:space-between;padding:0.875rem 1rem;border-bottom:0.5px solid var(--color-border-tertiary);}
+  .modal-date{font-size:14px;font-weight:600;color:var(--color-text-primary);}
+  .modal-topbar-right{display:flex;gap:6px;align-items:center;}
+  .saved-indicator{font-size:11px;color:#0F6E56;display:none;align-items:center;gap:3px;margin-right:2px;}
+  .saved-indicator.show{display:flex;}
+  .btn-modal-save{display:inline-flex;align-items:center;gap:5px;padding:6px 13px;font-size:13px;font-weight:500;border:none;border-radius:var(--border-radius-md);background:#185FA5;color:#fff;cursor:pointer;line-height:1;}
+  .btn-modal-save:hover{opacity:0.88;}
+  .btn-modal-icon{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;padding:0;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:transparent;cursor:pointer;color:var(--color-text-secondary);flex-shrink:0;}
+  .btn-modal-icon:hover{background:var(--color-background-secondary);}
+  .btn-modal-icon.danger{color:var(--color-text-danger);display:none;}
+  .btn-modal-icon.danger:hover{background:var(--color-background-danger);}
+  /* legado — mantido para compatibilidade com JS que faz .style.display */
+  .btn-modal-delete{display:none;}
+  .btn-modal-close{display:none;}
+  .modal-body{padding:0.875rem 1rem 1rem;}
+
+  .folga-check-row{display:flex;align-items:center;gap:8px;margin-bottom:0.875rem;padding:8px 10px;background:#FFF8E1;border:0.5px solid #F59E0B;border-radius:var(--border-radius-md);cursor:pointer;}
+  .folga-check-row input[type=checkbox]{width:16px;height:16px;cursor:pointer;accent-color:#F59E0B;}
+  .folga-check-label{font-size:13px;color:#D97706;font-weight:500;cursor:pointer;}
+  .blocks-section{transition:opacity 0.2s;}
+  .blocks-section.hidden{opacity:0.35;pointer-events:none;}
+
+  .block-row{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:end;margin-bottom:8px;}
+  .block-row.first{grid-template-columns:1fr 1fr;}
+  .time-select{width:100%;padding:7px 10px;font-size:13px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-secondary);color:var(--color-text-primary);outline:none;cursor:pointer;}
+  .time-select:focus{border-color:#185FA5;}
+  .btn-remove-block{width:28px;height:34px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:transparent;color:var(--color-text-danger);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;}
+  .btn-add-block{display:flex;align-items:center;gap:5px;font-size:12px;color:#185FA5;background:none;border:none;cursor:pointer;padding:2px 0;margin-bottom:8px;}
+  .modal-footer{display:flex;justify-content:space-between;align-items:center;padding-top:8px;border-top:0.5px solid var(--color-border-tertiary);margin-top:4px;}
+  .modal-total{font-size:12px;color:var(--color-text-secondary);}
+  .modal-total span{font-weight:500;color:var(--color-text-primary);}
+
+  .multisel-modal-wrap{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.35);align-items:center;justify-content:center;z-index:120;}
+  .multisel-modal-wrap.open{display:flex;}
+  .multisel-modal{background:var(--color-background-primary);border-radius:var(--border-radius-lg);border:0.5px solid var(--color-border-secondary);width:300px;max-width:90vw;overflow:hidden;}
+  .multisel-modal-header{padding:0.875rem 1rem;border-bottom:0.5px solid var(--color-border-tertiary);}
+  .multisel-modal-title{font-size:14px;font-weight:500;color:var(--color-text-primary);}
+  .multisel-modal-sub{font-size:11px;color:var(--color-text-secondary);margin-top:2px;}
+  .multisel-modal-body{padding:0.875rem 1rem 1rem;}
+  .multisel-modal-footer{display:flex;gap:8px;margin-top:0.875rem;}
+  .btn-multisel-cancel{flex:1;padding:8px;font-size:13px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:transparent;color:var(--color-text-secondary);cursor:pointer;}
+  .btn-multisel-save{flex:2;padding:8px;font-size:13px;font-weight:500;border:none;border-radius:var(--border-radius-md);background:#185FA5;color:#fff;cursor:pointer;}
+
+  .toast{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);background:#185FA5;color:#fff;font-size:13px;padding:9px 18px;border-radius:var(--border-radius-md);opacity:0;transition:opacity 0.3s;pointer-events:none;white-space:nowrap;z-index:300;max-width:90vw;text-align:center;}
+  .toast.show{opacity:1;}
+  .toast.error{background:#A32D2D;}
+
+  .full-overlay{position:fixed;inset:0;background:rgba(255,255,255,0.7);display:flex;align-items:center;justify-content:center;z-index:400;font-size:13px;color:var(--color-text-secondary);}
+  .full-overlay.hidden{display:none;}
+
+  /* Ajustes para telas pequenas (telemóveis) */
+  @media (max-width: 380px){
+    .app{padding:1rem 0.5rem;}
+    .day-cell{min-height:54px;padding:4px 2px;}
+    .month-cell{min-height:42px;padding:3px 2px;}
+    .day-num, .month-num{font-size:10px;}
+    .day-hours{font-size:10px;}
+    .day-delta, .month-d{font-size:9px;}
+    .saldo-box .val{font-size:17px;}
+    .saldo-box{padding:0.625rem;}
+    .lock-badge{font-size:8px;top:2px;right:2px;}
+    .tab-btn{font-size:11px;padding:6px 8px;}
+    .admin-selector{flex-wrap:wrap;}
+    /* O cabeçalho do calendário (◂ ▸ + título + Semana/Mês) não cabe numa só
+       linha em telas estreitas; o título passa para a sua própria linha. */
+    .cal-header{flex-wrap:wrap; row-gap:8px;}
+    .cal-title-btn{order:-1; flex:1 0 100%; justify-content:center;}
+    .picker-panel{width:240px;}
+    .view-toggle .view-btn{padding:4px 8px;font-size:11px;}
+    .donut-wrap{gap:0.75rem;}
+  }
+  </style>
+</head>
+<body>
+
+<div class="session-loading" id="session-loading">
+  <div class="logo-icon">⏱️</div>
+  <p>A restaurar sessão...</p>
+</div>
+
+<div class="app">
+
+  <!-- LOGIN -->
+  <div id="login-screen" class="screen active">
+    <div class="card">
+      <div class="logo"><span class="logo-icon">🕐</span><h1>Banco de Horas</h1><p>Registo de entrada e saída — Porto</p></div>
+      <div class="field"><label>Email</label><input type="email" id="login-email" placeholder="o teu email"/></div>
+      <div class="field"><label>Palavra-passe</label><input type="password" id="login-pass" placeholder="••••••"/></div>
+      <p class="error-msg" id="login-error"></p>
+      <button class="btn-primary" id="login-btn" onclick="doLogin()">Entrar</button>
+      <button class="btn-secondary" onclick="showScreen('signup-screen')">Criar conta</button>
+      <button class="btn-link" onclick="showScreen('recover-screen')">Esqueci a palavra-passe</button>
+    </div>
+  </div>
+
+  <!-- CRIAR CONTA — verificação email -->
+  <div id="signup-screen" class="screen">
+    <div class="card">
+      <div class="logo"><span class="logo-icon">🆕</span><h1>Criar conta</h1><p>Verifica se o teu email está autorizado</p></div>
+      <div class="field"><label>Email</label><input type="email" id="signup-email" placeholder="o teu email"/></div>
+      <p class="error-msg" id="signup-error"></p>
+      <button class="btn-primary" id="signup-btn" onclick="checkSignupEmail()">Continuar</button>
+      <button class="btn-link" onclick="showScreen('login-screen')">← Voltar</button>
+    </div>
+  </div>
+
+  <!-- CRIAR CONTA — dados -->
+  <div id="firstaccess-screen" class="screen">
+    <div class="card">
+      <div class="logo"><span class="logo-icon">✅</span><h1>Criar conta</h1><p id="firstaccess-email-label"></p></div>
+      <div class="step-indicator"><div class="step done">✓</div><div class="step-line"></div><div class="step active">2</div></div>
+      <div class="field"><label>Nome</label><input type="text" id="fa-name" placeholder="ex: João Silva"/></div>
+      <div class="field"><label>Palavra-passe</label><input type="password" id="fa-pass" placeholder="mínimo 4 caracteres"/></div>
+      <div class="field"><label>Confirmar</label><input type="password" id="fa-pass2" placeholder="repete"/></div>
+      <div class="divider"></div>
+      <p style="font-size:12px;color:var(--color-text-secondary);margin-bottom:8px">Horário padrão — registado automaticamente desde 1 junho</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:0.875rem">
+        <div class="field" style="margin:0"><label>Entrada</label><select class="time-select" id="fa-entry"></select></div>
+        <div class="field" style="margin:0"><label>Saída</label><select class="time-select" id="fa-exit"></select></div>
+      </div>
+      <p class="error-msg" id="fa-error"></p>
+      <button class="btn-primary" id="fa-btn" onclick="doFirstAccess()">Criar conta</button>
+      <button class="btn-link" onclick="showScreen('signup-screen')">← Voltar</button>
+    </div>
+  </div>
+
+  <!-- RECUPERAR PASSWORD -->
+  <div id="recover-screen" class="screen">
+    <div class="card">
+      <div class="logo"><span class="logo-icon">✉️</span><h1>Recuperar acesso</h1><p>Enviamos-te um código por email</p></div>
+      <div class="field"><label>Email</label><input type="email" id="recover-email" placeholder="o teu email"/></div>
+      <p class="error-msg" id="recover-error"></p>
+      <p class="info-msg" id="recover-ok"></p>
+      <button class="btn-primary" id="recover-btn" onclick="doRecover()">Enviar código</button>
+      <div class="divider"></div>
+      <div class="field"><label>Código recebido</label><input type="text" id="recover-code" placeholder="6 dígitos" maxlength="6"/></div>
+      <div class="field"><label>Nova palavra-passe</label><input type="password" id="recover-newpass" placeholder="••••••"/></div>
+      <p class="error-msg" id="recover-error2"></p>
+      <button class="btn-primary" id="reset-btn" onclick="doResetPass()" style="background:#0F6E56">Definir nova palavra-passe</button>
+      <button class="btn-link" onclick="showScreen('login-screen')">← Voltar ao login</button>
+    </div>
+  </div>
+
+  <!-- DEFINIÇÕES -->
+  <div id="settings-screen" class="screen">
+    <div class="card">
+      <div class="logo"><span class="logo-icon">⚙️</span><h1>Definições</h1><p id="settings-user-label"></p></div>
+
+      <div class="field"><label>Nome</label><input type="text" id="cp-name" placeholder="Nome"/></div>
+      <div class="divider"></div>
+
+      <div id="cp-email-section" style="display:none">
+        <p style="font-size:12px;color:var(--color-text-secondary);margin-bottom:8px">Email de acesso (login e recuperação de password)</p>
+        <div class="field"><label>Email</label><input type="email" id="cp-email" placeholder="email@dominio.pt"/></div>
+        <div class="divider"></div>
+      </div>
+
+      <div id="cp-schedule-section">
+        <p style="font-size:12px;color:var(--color-text-secondary);margin-bottom:8px">Horário padrão</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1rem">
+          <div class="field" style="margin:0"><label>Entrada</label><select class="time-select" id="cp-entry"></select></div>
+          <div class="field" style="margin:0"><label>Saída</label><select class="time-select" id="cp-exit"></select></div>
+        </div>
+        <div class="divider"></div>
+      </div>
+
+      <p style="font-size:12px;color:var(--color-text-secondary);margin-bottom:8px">Alterar palavra-passe <span style="font-size:11px">(deixa em branco para não alterar)</span></p>
+      <div class="field"><label>Atual</label><input type="password" id="cp-current" placeholder="••••••"/></div>
+      <div class="field"><label>Nova</label><input type="password" id="cp-new" placeholder="••••••"/></div>
+      <div class="field"><label>Confirmar</label><input type="password" id="cp-confirm" placeholder="••••••"/></div>
+      <p class="error-msg" id="cp-error"></p>
+      <p class="info-msg" id="cp-ok">Definições guardadas!</p>
+      <button class="btn-primary" id="cp-btn" onclick="doSaveSettings()">Guardar</button>
+      <button class="btn-link" onclick="backToDashboard()">← Voltar</button>
+    </div>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div id="dashboard-screen" class="screen">
+    <div class="card">
+      <div class="nav">
+        <div class="nav-user" onclick="toggleStats()">
+          <div class="avatar" id="user-avatar">JO</div>
+          <div><span class="nav-name" id="user-display"></span><span class="nav-hint"> ↓</span></div>
+        </div>
+        <div class="nav-actions">
+          <button class="btn-icon" id="btn-undo" onclick="doUndo()" title="Desfazer (Ctrl+Z)" disabled>↶</button>
+          <button class="btn-icon" id="btn-redo" onclick="doRedo()" title="Refazer (Ctrl+Y)" disabled>↷</button>
+          <button class="btn-icon" onclick="goSettings()">⚙️</button>
+          <button class="logout-btn" onclick="doLogout()">Sair</button>
+        </div>
+      </div>
+
+      <div id="stats-panel" class="stats-panel" style="display:none">
+        <div class="stats-header">
+          <span class="stats-title">Estatísticas</span>
+          <div class="stats-toggle">
+            <button class="stats-btn" id="stats-btn-week" onclick="setStatsView('week')">Semana</button>
+            <button class="stats-btn active" id="stats-btn-month" onclick="setStatsView('month')">Mês</button>
+          </div>
+        </div>
+        <div class="donut-wrap">
+          <svg id="stats-donut" width="100" height="100" viewBox="0 0 100 100" style="flex-shrink:0"></svg>
+          <div class="legend" id="stats-legend"></div>
+        </div>
+        <div class="sdivider"></div>
+        <div class="bars-title" id="stats-bars-title"></div>
+        <div id="stats-bars"></div>
+      </div>
+
+      <div class="saldo-row">
+        <div class="saldo-box"><div class="lbl">Saldo total</div><div class="val" id="saldo-total">+0h</div><div class="lbl-sub" id="saldo-total-dias"></div></div>
+        <div class="saldo-box"><div class="lbl" id="saldo-periodo-label">Este mês</div><div class="val" id="saldo-periodo">+0h</div></div>
+      </div>
+
+      <div class="multisel-bar" id="multisel-bar">
+        <span class="multisel-info" id="multisel-info">0 dias</span>
+        <div class="multisel-actions">
+          <button class="multisel-btn" onclick="openMultiSelModal()">🕐 Definir horas</button>
+          <button class="multisel-btn cancel" onclick="clearSelection()">✕</button>
+        </div>
+      </div>
+
+      <div class="cal-header">
+        <div class="nav-btns">
+          <button class="nav-btn" onclick="navigate(-1)">‹</button>
+          <button class="nav-btn" onclick="navigate(1)">›</button>
+        </div>
+        <button class="cal-title-btn" onclick="togglePicker('user-picker')">
+          <span id="cal-title"></span>
+          ▾
+        </button>
+        <div class="view-toggle">
+          <button class="view-btn" id="btn-week" onclick="setView('week')">Semana</button>
+          <button class="view-btn active" id="btn-month" onclick="setView('month')">Mês</button>
+        </div>
+        <div class="picker-panel" id="user-picker" style="display:none">
+          <div class="picker-years" id="picker-years-user"></div>
+          <div class="picker-months" id="picker-months-user"></div>
+        </div>
+      </div>
+      <div class="picker-overlay" id="picker-overlay-user" onclick="closePicker('user-picker','picker-overlay-user')"></div>
+      <div id="cal-container"></div>
+    </div>
+  </div>
+
+  <!-- ADMIN -->
+  <div id="admin-screen" class="screen">
+    <div class="card">
+      <div class="nav">
+        <div class="nav-user" style="cursor:default">
+          <div class="avatar admin" id="admin-nav-avatar">AD</div>
+          <div><span class="nav-name" id="admin-nav-name">Administrador</span><span class="badge-admin" style="margin-left:6px">Admin</span></div>
+        </div>
+        <div class="nav-actions">
+          <button class="btn-icon" onclick="goSettings()">⚙️</button>
+          <button class="logout-btn" onclick="doLogout()">Sair</button>
+        </div>
+      </div>
+      <div class="admin-tabs">
+        <button class="tab-btn active" id="tab-overview" onclick="setAdminTab('overview')">Resumo</button>
+        <button class="tab-btn" id="tab-calendar" onclick="setAdminTab('calendar')">Calendário</button>
+        <button class="tab-btn" id="tab-closed" onclick="setAdminTab('closed')">Pausas</button>
+        <button class="tab-btn" id="tab-users" onclick="setAdminTab('users')">Utilizadores</button>
+        <button class="tab-btn" id="tab-export" onclick="setAdminTab('export')">Exportar</button>
+      </div>
+      <div id="admin-overview-tab">
+        <div id="admin-pending-requests"></div>
+        <div class="admin-overview" id="admin-cards"></div>
+      </div>
+      <div id="admin-calendar-tab" style="display:none">
+        <div class="admin-selector" id="admin-user-selector"></div>
+        <div class="saldo-row">
+          <div class="saldo-box"><div class="lbl">Saldo total</div><div class="val" id="admin-saldo-total">+0h</div><div class="lbl-sub" id="admin-saldo-total-dias"></div></div>
+          <div class="saldo-box"><div class="lbl" id="admin-periodo-label">Este mês</div><div class="val" id="admin-saldo-periodo">+0h</div></div>
+        </div>
+        <div class="cal-header" style="position:relative">
+          <div class="nav-btns">
+            <button class="nav-btn" onclick="adminNavigate(-1)">‹</button>
+            <button class="nav-btn" onclick="adminNavigate(1)">›</button>
+          </div>
+          <button class="cal-title-btn" onclick="togglePicker('admin-picker')">
+            <span id="admin-cal-title"></span>
+            ▾
+          </button>
+          <div class="view-toggle">
+            <button class="view-btn" id="admin-btn-week" onclick="setAdminView('week')">Semana</button>
+            <button class="view-btn active" id="admin-btn-month" onclick="setAdminView('month')">Mês</button>
+          </div>
+          <div class="picker-panel" id="admin-picker" style="display:none">
+            <div class="picker-years" id="picker-years-admin"></div>
+            <div class="picker-months" id="picker-months-admin"></div>
+          </div>
+        </div>
+        <div class="picker-overlay" id="picker-overlay-admin" onclick="closePicker('admin-picker','picker-overlay-admin')"></div>
+        <div id="admin-cal-container"></div>
+
+        <div class="sdivider"></div>
+        <div class="stats-panel" style="margin-bottom:0;padding:0;background:transparent;border:none;">
+          <div class="stats-header">
+            <span class="stats-title">Estatísticas</span>
+            <div class="stats-toggle">
+              <button class="stats-btn" id="admin-stats-btn-week" onclick="setAdminStatsView('week')">Semana</button>
+              <button class="stats-btn active" id="admin-stats-btn-month" onclick="setAdminStatsView('month')">Mês</button>
+            </div>
+          </div>
+          <div class="donut-wrap">
+            <svg id="admin-stats-donut" width="100" height="100" viewBox="0 0 100 100" style="flex-shrink:0"></svg>
+            <div class="legend" id="admin-stats-legend"></div>
+          </div>
+          <div class="sdivider"></div>
+          <div class="bars-title" id="admin-stats-bars-title"></div>
+          <div id="admin-stats-bars"></div>
+        </div>
+      </div>
+      <div id="admin-closed-tab" style="display:none">
+        <div class="closed-list" id="closed-list"></div>
+        <div class="divider"></div>
+        <p style="font-size:12px;color:var(--color-text-secondary);margin-bottom:8px">Adicionar encerramento</p>
+        <div class="add-closed-grid">
+          <input type="text" id="closed-name" placeholder="Nome"/>
+          <input type="date" id="closed-start"/>
+          <input type="date" id="closed-end"/>
+          <button class="btn-add-closed" onclick="addClosed()">+</button>
+        </div>
+        <p class="error-msg" id="closed-error" style="margin-top:8px"></p>
+      </div>
+      <div id="admin-users-tab" style="display:none">
+        <div class="user-list" id="user-list"></div>
+        <div class="divider"></div>
+        <p style="font-size:12px;color:var(--color-text-secondary);margin-bottom:8px">Convidar utilizador</p>
+        <div class="add-user-row">
+          <input type="text" id="new-user-name" placeholder="Nome"/>
+          <input type="email" id="new-user-email" placeholder="Email"/>
+          <button class="btn-add-user" onclick="addUser()">+</button>
+        </div>
+        <p class="error-msg" id="add-user-error" style="margin-top:8px"></p>
+        <p class="info-msg" id="add-user-ok" style="margin-top:8px"></p>
+      </div>
+      <div id="admin-export-tab" style="display:none">
+        <div class="export-row"><label>Funcionário</label><select id="export-user"></select></div>
+        <div class="export-row">
+          <label>Período</label>
+          <select id="export-period" onchange="onExportPeriodChange()">
+            <option value="current">Mês atual</option>
+            <option value="prev">Mês anterior</option>
+            <option value="all">Tudo</option>
+            <option value="month">Mês específico…</option>
+            <option value="week">Semana específica…</option>
+          </select>
+        </div>
+        <div id="export-period-detail" style="display:none;margin-bottom:0.5rem"></div>
+        <button class="btn-export" onclick="exportTXT()" style="border-color:#185FA5;color:#185FA5">Exportar relatório TXT</button>
+        <button class="btn-export" onclick="exportPDF()" style="margin-top:6px;border-color:#B91C1C;color:#B91C1C">Exportar relatório PDF</button>
+
+        <div class="sdivider"></div>
+        <div class="stats-title" style="margin-bottom:0.5rem">Resumo por email</div>
+        <div class="field" style="margin-bottom:0.75rem">
+          <label>Periodicidade</label>
+          <select class="time-select" id="summary-frequency" onchange="onSummaryFrequencyChange()">
+            <option value="none">Desativado</option>
+            <option value="weekly">Semanal (toda segunda-feira)</option>
+            <option value="monthly">Mensal (dia 1 de cada mês)</option>
+            <option value="yearly">Anual (dia 1 de janeiro)</option>
+          </select>
+        </div>
+        <div id="monthly-summary-status" style="font-size:13px;color:var(--color-text-secondary);margin-bottom:0.75rem"></div>
+        <button class="btn-export" onclick="sendMonthlySummaryNow()" style="border-color:#185FA5;color:#185FA5">Enviar agora (teste)</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL HORAS -->
+<div class="modal-wrap" id="modal-wrap" onclick="closeModalOutside(event)">
+  <div class="modal">
+    <div class="modal-topbar">
+      <div><div class="modal-date" id="modal-title">—</div></div>
+      <div class="modal-topbar-right">
+        <div class="saved-indicator" id="saved-indicator">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#0F6E56" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Guardado
+        </div>
+        <button class="btn-modal-save" id="btn-save-modal" onclick="saveAndCloseModal()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+          Guardar
+        </button>
+        <!-- lixo: usa .btn-modal-icon.danger; JS controla display via #btn-delete -->
+        <button class="btn-modal-icon danger" id="btn-delete" onclick="deleteEntry()" title="Apagar registo">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+        </button>
+        <button class="btn-modal-icon" onclick="closeModal()" title="Fechar">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="modal-body">
+      <div id="modal-min-entry-note" class="info-msg" style="display:none;margin-bottom:0.5rem">🔒 O administrador definiu a hora mínima de entrada para este dia.</div>
+      <div id="modal-folga-status-note" style="display:none;margin-bottom:0.5rem"></div>
+      <div class="folga-check-row" onclick="toggleFolgaCheck()">
+        <input type="checkbox" id="folga-check" onclick="event.stopPropagation();toggleFolgaCheck()"/>
+        <label class="folga-check-label">🏖️ Dia de folga (desconta do saldo)</label>
+      </div>
+      <div class="blocks-section" id="blocks-section">
+        <div id="blocks-container"></div>
+        <button class="btn-add-block" id="btn-add-block-wrap" onclick="addBlock()">+ Adicionar período</button>
+      </div>
+      <div class="modal-footer">
+        <div class="modal-total">Total: <span id="modal-total-val">0h</span></div>
+        <div class="modal-total">Saldo: <span id="modal-saldo-val">+0h</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL MULTI-SELECT -->
+<div class="multisel-modal-wrap" id="multisel-modal-wrap" onclick="closeMultiSelOutside(event)">
+  <div class="multisel-modal">
+    <div class="multisel-modal-header">
+      <div class="multisel-modal-title">Definir horário</div>
+      <div class="multisel-modal-sub" id="multisel-modal-sub"></div>
+    </div>
+    <div class="multisel-modal-body">
+      <div class="folga-check-row" onclick="toggleMsFolga()" style="margin-bottom:0.875rem">
+        <input type="checkbox" id="ms-folga-check" onclick="event.stopPropagation();toggleMsFolga()"/>
+        <label class="folga-check-label">🏖️ Marcar como dias de folga</label>
+      </div>
+      <div id="ms-blocks-section">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:0.875rem">
+          <div class="field" style="margin:0"><label>Entrada</label><select class="time-select" id="ms-entry"></select></div>
+          <div class="field" style="margin:0"><label>Saída</label><select class="time-select" id="ms-exit"></select></div>
+        </div>
+        <div class="modal-footer" style="border-top:none;padding-top:0;margin-top:0">
+          <div class="modal-total">Total: <span id="ms-total-val">4h</span></div>
+          <div class="modal-total">Saldo/dia: <span id="ms-saldo-val">+0h</span></div>
+        </div>
+      </div>
+      <div class="multisel-modal-footer">
+        <button class="btn-multisel-cancel" onclick="closeMultiSel()">Cancelar</button>
+        <button class="btn-multisel-save" id="ms-save-btn" onclick="saveMultiSel()">✓ Aplicar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CONTEXT MENU -->
+<div class="ctx-menu" id="ctx-menu">
+  <div class="ctx-item" id="ctx-edit" onclick="ctxEdit()">✎ Editar horas</div>
+  <div class="ctx-sep"></div>
+  <div class="ctx-item" id="ctx-comment" onclick="ctxComment()">💬 Adicionar comentário</div>
+  <div class="ctx-item danger" id="ctx-del-comment" onclick="ctxDelComment()" style="display:none">🗑️ Remover comentário</div>
+</div>
+
+<!-- COMMENT MODAL -->
+<div class="cmt-modal-wrap" id="cmt-modal-wrap" onclick="closeCmtOutside(event)">
+  <div class="cmt-modal">
+    <h3 id="cmt-modal-title">Comentário</h3>
+    <textarea class="cmt-textarea" id="cmt-textarea" placeholder="Escreve uma nota..."></textarea>
+    <div class="cmt-btns">
+      <button class="cmt-cancel" onclick="closeCmt()">Cancelar</button>
+      <button class="cmt-save" onclick="saveCmt()">✓ Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADMIN LOCK MODAL (hora mínima de entrada / hora máxima de saída) -->
+<div class="lock-modal-wrap" id="lock-modal-wrap" onclick="closeLockModalOutside(event)">
+  <div class="lock-modal">
+    <h3 id="lock-modal-title">Restrição de horário</h3>
+    <div class="sub" id="lock-modal-sub"></div>
+    <div class="field" style="margin-bottom:0.875rem">
+      <label>Não permitir entrada antes de</label>
+      <select class="time-select" id="lock-min-entry"></select>
+    </div>
+    <div class="field" style="margin-bottom:0.875rem">
+      <label>Não permitir saída depois de</label>
+      <select class="time-select" id="lock-max-exit"></select>
+    </div>
+    <div class="folga-check-row" id="lock-folga-row" onclick="document.getElementById('lock-folga-check').click()" style="margin-bottom:0.875rem;background:#FFF8E1;border-color:#F59E0B">
+      <input type="checkbox" id="lock-folga-check" onclick="event.stopPropagation()"/>
+      <label class="folga-check-label">🏖️ Marcar como folga obrigatória</label>
+    </div>
+    <button class="btn-add-block" id="lock-comment-btn" onclick="openAdminCommentModal()">💬 <span id="lock-comment-btn-label">Adicionar comentário</span></button>
+    <div class="cmt-btns">
+      <button class="cmt-cancel" onclick="closeLockModal()">Cancelar</button>
+      <button class="cmt-save" onclick="saveAdminLock()">✓ Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADMIN PASSWORD CONFIRM MODAL -->
+<div class="cmt-modal-wrap" id="pass-modal-wrap" onclick="closePassModalOutside(event)">
+  <div class="cmt-modal">
+    <h3>Confirmar password de admin</h3>
+    <div class="field" style="margin-bottom:0.5rem">
+      <input type="password" id="pass-modal-input" placeholder="A tua password de admin"/>
+    </div>
+    <p class="info-msg" id="pass-modal-err" style="color:#B91C1C;background:#FEF2F2;"></p>
+    <div class="cmt-btns">
+      <button class="cmt-cancel" onclick="closePassModal()">Cancelar</button>
+      <button class="cmt-save" onclick="confirmPassModal()" style="background:#B91C1C">✓ Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<div class="full-overlay hidden" id="full-overlay">A carregar...</div>
+
+<script>
+/* =====================================================================
+   BANCO DE HORAS — Frontend (cliente)
+   ===================================================================== */
+
+const MONTH_NAMES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+const MONTH_SHORT = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+const WEEK_DAYS_PT = ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
+const WEEK_LABELS = ['Seg','Ter','Qua','Qui','Sex','Sáb','Dom'];
+const DAILY_MINS = 240;
+const ALLOWED_YEARS = [2026,2027,2028,2029];
+const START_DATE = '2026-06-01';
+const MAX_BLOCKS = 3;
+
+/* ============================ ESTADO ============================ */
+
+let state = {
+  user: null,          // {email,name,role,defaultEntry,defaultExit}
+  entries: {},         // 'YYYY-MM-DD' -> {entry,exit} | [{entry,exit}...] | {folga:true}
+  comments: {},        // 'YYYY-MM-DD' -> texto
+  closed: [],          // [{name,start,end}]
+  minEntries: {},      // 'YYYY-MM-DD' -> 'HH:mm' (hora mínima de entrada imposta pelo admin)
+  maxExits: {},        // 'YYYY-MM-DD' -> 'HH:mm' (hora máxima de saída imposta pelo admin)
+  folgaStatus: {},     // 'YYYY-MM-DD' -> 'Pendente' | 'Rejeitado'
+  admin: null          // {employees,entriesByEmail,closed,invited,users}
+};
+
+let view = 'month', cursorDate = new Date();
+let adminView = 'month', adminCursorDate = new Date(), adminSelectedEmail = null;
+let modalDate = null, modalBlocks = [];
+let statsVisible = false, statsView = 'month', monthsExpanded = false;
+let selectedDays = new Set(), shiftAnchor = null;
+let ctxDate = null, savedTimer = null;
+let undoStack = [], redoStack = [];
+const MAX_UNDO = 50;
+
+/* ============================ HELPERS GERAIS ============================ */
+
+function pad(n){ return (n<10?'0':'')+n; }
+function fmtKey(d){ return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()); }
+function toMins(t){ const p=t.split(':').map(Number); return p[0]*60+p[1]; }
+function fmtMins(m){ const h=Math.floor(m/60), mn=m%60; return mn>0? (h+'h '+mn+'m') : (h+'h'); }
+function fmtDelta(m){ const a=Math.abs(m), h=Math.floor(a/60), mn=a%60, s=m>=0?'+':'-'; return mn>0? (s+h+'h '+mn+'m') : (s+h+'h'); }
+// Converte um saldo (em minutos) para "dias de folga" equivalentes (1 dia = DAILY_MINS)
+function fmtDias(m){ return '≈ '+(m/DAILY_MINS).toFixed(2)+' dias'; }
+function isToday(d){ const t=new Date(); return d.getFullYear()===t.getFullYear() && d.getMonth()===t.getMonth() && d.getDate()===t.getDate(); }
+function getWeekStart(d){ const dd=new Date(d), day=dd.getDay(); dd.setDate(dd.getDate()+(day===0?-6:1-day)); dd.setHours(0,0,0,0); return dd; }
+function initials(name){ const p=String(name||'').trim().split(' '); return p.length>=2 ? (p[0][0]+p[p.length-1][0]).toUpperCase() : String(name||'??').slice(0,2).toUpperCase(); }
+
+// Combina mapas de hora mínima de entrada / hora máxima de saída em
+// { 'YYYY-MM-DD': {min:'HH:mm'|undefined, max:'HH:mm'|undefined} }
+function combineLocks(minObj, maxObj, folgaObj){
+  const out = {};
+  Object.keys(minObj||{}).forEach(function(k){ (out[k]=out[k]||{}).min = minObj[k]; });
+  Object.keys(maxObj||{}).forEach(function(k){ (out[k]=out[k]||{}).max = maxObj[k]; });
+  Object.keys(folgaObj||{}).forEach(function(k){ (out[k]=out[k]||{}).folgaStatus = folgaObj[k]; });
+  return out;
+}
+
+function buildTimeOptions(sel, val, minTime, maxTime){
+  sel.innerHTML='';
+  const minM = minTime ? toMins(minTime) : -1;
+  const maxM = maxTime ? toMins(maxTime) : 9999;
+  for(let h=8; h<=18; h++){
+    const hMaxM = h===18 ? 30 : 45;
+    for(let m=0; m<=hMaxM; m+=15){
+      const v = pad(h)+':'+pad(m);
+      const vm = toMins(v);
+      if(minM>=0 && vm<minM) continue; // não mostra horas anteriores ao mínimo permitido
+      if(vm>maxM) continue; // não mostra horas posteriores ao máximo permitido
+      const o = document.createElement('option');
+      o.value=v; o.textContent=v;
+      if(v===val) o.selected=true;
+      sel.appendChild(o);
+    }
+  }
+}
+
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+function showToast(msg, isError){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.toggle('error', !!isError);
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2800);
+}
+
+// Carrega os dados pesados do admin (employees/entries/closed/invited) numa chamada
+// separada do login, para o login em si ser rápido. Tenta 1 vez extra se falhar.
+async function loadAdminBootstrap(attempt){
+  attempt = attempt || 1;
+  try{
+    const res = await rpc('gsGetAdminBootstrap');
+    if(!res || !res.ok){
+      throw new Error((res && res.error) || 'Resposta inválida');
+    }
+    state.admin = res.admin;
+    setAdminTab(document.querySelector('#admin-screen .tab-btn.active')?.id?.replace('tab-','') || 'overview');
+  }catch(e){
+    console.error('[loadAdminBootstrap] tentativa '+attempt+' falhou:', e);
+    if(attempt < 2){
+      setTimeout(()=>loadAdminBootstrap(attempt+1), 1200);
+    }else{
+      showToast('Erro ao carregar dados de admin. Atualiza a página (F5) e tenta novamente.', true);
+    }
+  }
+}
+function showOverlay(msg){
+  const o = document.getElementById('full-overlay');
+  if(msg) o.textContent = msg;
+  o.classList.remove('hidden');
+}
+function hideOverlay(){
+  document.getElementById('full-overlay').classList.add('hidden');
+}
+function setBtnLoading(btn, loading, normalText){
+  if(loading){ btn.disabled=true; btn.dataset._txt = btn.innerHTML; btn.innerHTML='A processar...'; }
+  else { btn.disabled=false; if(btn.dataset._txt) btn.innerHTML = btn.dataset._txt; }
+}
+
+/* ============================ RPC (google.script.run) ============================ */
+
+function rpc(name){
+  const args = Array.prototype.slice.call(arguments, 1);
+  const MAX_ATTEMPTS = 3;
+  const RETRY_DELAYS = [400, 1000, 2000]; // ms
+
+  function attempt(n){
+    return new Promise(function(resolve, reject){
+      if(typeof google === 'undefined' || !google.script || !google.script.run){
+        reject(new Error('google.script.run não disponível (a app tem de correr publicada no Apps Script)'));
+        return;
+      }
+      const runner = google.script.run
+        .withSuccessHandler(function(res){
+          console.log('[rpc OK] (tentativa '+n+')', name, res);
+          if(res === null || res === undefined){
+            if(n < MAX_ATTEMPTS){
+              console.warn('[rpc] resposta nula para', name, '— a repetir em', RETRY_DELAYS[n-1]+'ms (tentativa '+(n+1)+'/'+MAX_ATTEMPTS+')');
+              setTimeout(function(){ attempt(n+1).then(resolve, reject); }, RETRY_DELAYS[n-1]);
+            }else{
+              console.error('[rpc] resposta nula para', name, 'após', MAX_ATTEMPTS, 'tentativas.');
+              reject(new Error('Ligação perdida. Atualiza a página (F5) e tenta novamente.'));
+            }
+            return;
+          }
+          resolve(res);
+        })
+        .withFailureHandler(function(err){ console.error('[rpc FAIL] (tentativa '+n+')', name, err); reject(err); });
+      runner[name](...args);
+    });
+  }
+
+  return attempt(1);
+}
+
+/* ============================ FERIADOS / DIAS ÚTEIS (cliente) ============================ */
+
+function easterDate(year){
+  const a=year%19, b=Math.floor(year/100), c=year%100, d=Math.floor(b/4), e=b%4,
+        f=Math.floor((b+8)/25), g=Math.floor((b-f+1)/3), h=(19*a+b-d-g+15)%30,
+        i=Math.floor(c/4), k=c%4, l=(32+2*e+2*i-h-k)%7, m=Math.floor((a+11*h+22*l)/451),
+        n=h+l-7*m+114;
+  return new Date(year, Math.floor(n/31)-1, (n%31)+1);
+}
+
+function ptHolidays(year){
+  const e=easterDate(year);
+  const addD=function(n){ const r=new Date(e); r.setDate(r.getDate()+n); return r; };
+  const fmt=function(d){ return fmtKey(d); };
+  const map={};
+  map[year+'-01-01']='Ano Novo';
+  map[fmt(addD(-2))]='Sexta-Feira Santa';
+  map[fmt(e)]='Páscoa';
+  map[year+'-04-25']='25 de Abril';
+  map[year+'-05-01']='Dia do Trabalhador';
+  map[year+'-06-10']='Dia de Portugal';
+  map[fmt(addD(60))]='Corpo de Deus';
+  map[year+'-08-15']='Assunção de N. Sra.';
+  map[year+'-10-05']='Implantação da República';
+  map[year+'-11-01']='Dia de Todos os Santos';
+  map[year+'-12-01']='Restauração da Independência';
+  map[year+'-12-08']='Imaculada Conceição';
+  map[year+'-12-25']='Natal';
+  map[year+'-06-24']='São João (Porto)';
+  return map;
+}
+
+const _holCache = {};
+function getHolidays(refDate){
+  const y = (refDate||cursorDate).getFullYear();
+  let all = {};
+  [y-1, y, y+1].forEach(function(yr){
+    if(!_holCache[yr]) _holCache[yr] = ptHolidays(yr);
+    Object.assign(all, _holCache[yr]);
+  });
+  return all;
+}
+
+function isClosedDay(key){
+  return state.closed.some(function(c){ return key>=c.start && key<=c.end; });
+}
+function getClosedName(key){
+  const c = state.closed.find(function(c){ return key>=c.start && key<=c.end; });
+  return c ? c.name : '';
+}
+
+function getBlockedReason(key, hols){
+  if(key < START_DATE) return 'Fora do período do sistema';
+  if(!hols) hols = getHolidays(new Date(key+'T00:00:00'));
+  const d = new Date(key+'T00:00:00'), dw = d.getDay();
+  if(dw===0 || dw===6) return 'Fim de semana';
+  if(hols[key]) return hols[key];
+  if(isClosedDay(key)) return getClosedName(key);
+  return null;
+}
+function isWorkDay(key, hols){ return !getBlockedReason(key, hols); }
+
+/* ============================ ENTRADAS ============================ */
+
+// entry: {entry,exit} | [{entry,exit}...] | {folga:true} | undefined
+function entryData(entry){
+  if(!entry) return {mins:0, isFolga:false, exists:false};
+  if(entry.folga) return {mins:0, isFolga:true, exists:true};
+  const blocks = Array.isArray(entry) ? entry : [entry];
+  const mins = blocks.reduce(function(s,b){ return s + (toMins(b.exit)-toMins(b.entry)); }, 0);
+  return {mins:mins, isFolga:false, exists:true};
+}
+function entryBlocks(entry){
+  if(!entry || entry.folga) return [];
+  return Array.isArray(entry) ? entry : [entry];
+}
+
+function getDayCls(key, entriesObj, hols){
+  if(getBlockedReason(key, hols)) return 'blocked';
+  const e = entriesObj[key];
+  if(!e) return '';
+  const d = entryData(e);
+  if(d.isFolga) return 'folga';
+  const delta = d.mins - DAILY_MINS;
+  return delta>0 ? 'over' : (delta<0 ? 'under' : 'exact');
+}
+
+function getTooltip(key, entriesObj, commentsObj, hols){
+  const reason = getBlockedReason(key, hols);
+  if(reason) return reason;
+  const e = entriesObj[key];
+  const cmt = commentsObj ? commentsObj[key] : null;
+  let tip = '';
+  if(e){
+    const d = entryData(e);
+    if(d.isFolga) tip = '🏖️ Dia de folga';
+    else {
+      const blocks = entryBlocks(e);
+      tip = blocks.map(function(b){ return b.entry+'–'+b.exit; }).join(' | ') +
+            ' · ' + fmtMins(d.mins) + ' (' + fmtDelta(d.mins-DAILY_MINS) + ')';
+    }
+  }
+  if(cmt) tip += (tip?'\n':'') + '💬 ' + cmt.slice(0,40) + (cmt.length>40?'…':'');
+  return tip || null;
+}
+
+/* ============================ SALDOS ============================ */
+
+function calcSaldos(entriesObj, vw, cd){
+  const hols = getHolidays(cd);
+  let total=0, periodo=0;
+  Object.keys(entriesObj).forEach(function(k){
+    if(k < START_DATE) return;
+    if(!isWorkDay(k, getHolidays(new Date(k+'T00:00:00')))) return;
+    const d = entryData(entriesObj[k]);
+    total += d.isFolga ? -DAILY_MINS : (d.mins - DAILY_MINS);
+  });
+  const days=[];
+  if(vw==='week'){
+    const ws=getWeekStart(cd);
+    for(let i=0;i<7;i++){ const dt=new Date(ws); dt.setDate(dt.getDate()+i); days.push(fmtKey(dt)); }
+  } else {
+    const y=cd.getFullYear(), mo=cd.getMonth(), dim=new Date(y,mo+1,0).getDate();
+    for(let i=1;i<=dim;i++) days.push(fmtKey(new Date(y,mo,i)));
+  }
+  days.forEach(function(k){
+    if(!entriesObj[k]) return;
+    if(!isWorkDay(k, hols)) return;
+    const d = entryData(entriesObj[k]);
+    periodo += d.isFolga ? -DAILY_MINS : (d.mins - DAILY_MINS);
+  });
+  return {total:total, periodo:periodo};
+}
+
+/* ============================ CALENDÁRIO (render genérico) ============================ */
+
+// entriesObj/commentsObj: dados a mostrar. allowInteraction: permite clique/seleção/contexto.
+function renderCalendar(entriesObj, commentsObj, vw, cd, containerId, allowInteraction, locksObj){
+  locksObj = locksObj || {};
+  const isAdminCal = containerId === 'admin-cal-container';
+  const hols = getHolidays(cd);
+  const titleId = containerId==='cal-container' ? 'cal-title' : 'admin-cal-title';
+  let html = '';
+
+  if(vw==='week'){
+    const ws=getWeekStart(cd), we=new Date(ws); we.setDate(we.getDate()+6);
+    document.getElementById(titleId).textContent =
+      ws.getDate()+' '+MONTH_SHORT[ws.getMonth()]+' – '+we.getDate()+' '+MONTH_SHORT[we.getMonth()]+' '+we.getFullYear();
+    html += '<div class="week-grid">';
+    WEEK_LABELS.forEach(function(l){ html += '<div class="week-label">'+l+'</div>'; });
+    for(let i=0;i<7;i++){
+      const d=new Date(ws); d.setDate(d.getDate()+i);
+      html += renderDayCell(d, entriesObj, commentsObj, hols, allowInteraction, false, locksObj, isAdminCal);
+    }
+    html += '</div>';
+  } else {
+    const y=cd.getFullYear(), mo=cd.getMonth();
+    document.getElementById(titleId).textContent = MONTH_NAMES[mo]+' '+y;
+    let startDow = new Date(y,mo,1).getDay(); if(startDow===0) startDow=7;
+    const dim = new Date(y,mo+1,0).getDate();
+    const prevDays = new Date(y,mo,0).getDate();
+    html += '<div class="month-grid">';
+    WEEK_LABELS.forEach(function(l){ html += '<div class="month-label">'+l+'</div>'; });
+    for(let i=1;i<startDow;i++){
+      html += '<div class="month-cell other-month"><div class="month-num">'+(prevDays-startDow+i+1)+'</div></div>';
+    }
+    for(let d=1; d<=dim; d++){
+      const date = new Date(y,mo,d);
+      html += renderDayCell(date, entriesObj, commentsObj, hols, allowInteraction, true, locksObj, isAdminCal);
+    }
+    const cells = (startDow-1) + dim, rem = cells%7===0 ? 0 : 7-(cells%7);
+    for(let i=1;i<=rem;i++){
+      html += '<div class="month-cell other-month"><div class="month-num">'+i+'</div></div>';
+    }
+    html += '</div>';
+  }
+  document.getElementById(containerId).innerHTML = html;
+}
+
+function renderDayCell(date, entriesObj, commentsObj, hols, allowInteraction, isMonthView, locksObj, isAdminCal){
+  const k = fmtKey(date);
+  const cls = isMonthView ? 'month-cell' : 'day-cell';
+  const numCls = isMonthView ? 'month-num' : 'day-num';
+  const dcls = getDayCls(k, entriesObj, hols);
+  const blocked = dcls==='blocked';
+  const isSel = allowInteraction && selectedDays.has(k);
+  const hasCmt = !!(commentsObj && commentsObj[k]);
+  const tip = getTooltip(k, entriesObj, commentsObj, hols);
+  const lock = locksObj && locksObj[k];
+
+  let handlers = '';
+  if(allowInteraction){
+    if(!blocked) handlers += ' onclick="handleDayClick(\''+k+'\',event)" ontouchstart="handleTouchStart(\''+k+'\',event)" ontouchend="handleTouchEnd(event)" ontouchmove="handleTouchMove()" ontouchcancel="handleTouchMove()"';
+    handlers += ' oncontextmenu="openCtxMenu(event,\''+k+'\')"';
+  } else if(isAdminCal && !blocked){
+    handlers += ' onclick="openAdminLockModal(\''+k+'\')" style="cursor:pointer"';
+  }
+
+  let html = '<div class="'+cls+' '+dcls+' '+(isToday(date)?'today':'')+' '+(isSel?'selected':'')+' '+(hasCmt&&!isSel?'has-comment':'')+'"'+handlers+'>';
+  if(tip) html += '<div class="tooltip">'+tip.replace(/\n/g,'<br>')+'</div>';
+  if(lock){
+    let lockTip = '';
+    if(lock.min) lockTip += 'Entrada mín.: '+lock.min;
+    if(lock.max) lockTip += (lockTip?' · ':'')+'Saída máx.: '+lock.max;
+    if(lockTip) html += '<div class="lock-badge" title="'+lockTip+'">🔒</div>';
+    if(lock.folgaStatus==='Pendente') html += '<div class="lock-badge" style="right:auto;left:3px" title="Pedido de folga pendente">⏳</div>';
+    else if(lock.folgaStatus==='Rejeitado') html += '<div class="lock-badge" style="right:auto;left:3px" title="Pedido de folga rejeitado">❌</div>';
+  }
+  html += '<div class="'+numCls+'">'+date.getDate()+'</div>';
+
+  const e = entriesObj[k];
+  if(e && !blocked){
+    const d = entryData(e);
+    if(d.isFolga){
+      html += '<div class="folga-day-label" style="font-size:'+(isMonthView?'9px':'10px')+'">🏖️'+(isMonthView?'':' Folga')+'</div>';
+    } else {
+      const delta = d.mins - DAILY_MINS;
+      const deltaCls = delta>0?'pos':(delta<0?'neg':'zero');
+      if(isMonthView){
+        html += '<div class="month-d '+deltaCls+'">'+fmtDelta(delta)+'</div>';
+      } else {
+        html += '<div class="day-hours">'+fmtMins(d.mins)+'</div><div class="day-delta '+deltaCls+'">'+fmtDelta(delta)+'</div>';
+      }
+    }
+  }
+  html += '</div>';
+  return html;
+}
+
+/* ============================ DASHBOARD (utilizador) ============================ */
+
+function render(){
+  renderCalendar(state.entries, state.comments, view, cursorDate, 'cal-container', true, combineLocks(state.minEntries, state.maxExits, state.folgaStatus));
+  const s = calcSaldos(state.entries, view, cursorDate);
+  const sv = document.getElementById('saldo-total');
+  sv.textContent = fmtDelta(s.total); sv.className = 'val '+(s.total>0?'pos':(s.total<0?'neg':'zero'));
+  document.getElementById('saldo-total-dias').textContent = fmtDias(s.total);
+  const sp = document.getElementById('saldo-periodo');
+  sp.textContent = fmtDelta(s.periodo); sp.className = 'val '+(s.periodo>0?'pos':(s.periodo<0?'neg':'zero'));
+  document.getElementById('saldo-periodo-label').textContent = view==='week' ? 'Esta semana' : 'Este mês';
+  if(statsVisible) renderStats();
+}
+
+function setView(v){
+  view=v;
+  cursorDate = new Date(); // ao trocar de vista, mostra sempre o período (semana/mês) atual
+  document.getElementById('btn-week').classList.toggle('active', v==='week');
+  document.getElementById('btn-month').classList.toggle('active', v==='month');
+  render();
+}
+function navigate(dir){
+  if(view==='week') cursorDate.setDate(cursorDate.getDate()+dir*7);
+  else cursorDate.setMonth(cursorDate.getMonth()+dir);
+  render();
+}
+
+/* ============================ PICKER MÊS/ANO ============================ */
+
+function togglePicker(pickerId){
+  const p = document.getElementById(pickerId);
+  const isAdmin = pickerId==='admin-picker';
+  const overlayId = isAdmin ? 'picker-overlay-admin' : 'picker-overlay-user';
+  const cd = isAdmin ? adminCursorDate : cursorDate;
+  if(p.style.display==='block'){ closePicker(pickerId, overlayId); return; }
+  const yearsEl = document.getElementById(isAdmin?'picker-years-admin':'picker-years-user');
+  yearsEl.innerHTML = ALLOWED_YEARS.map(function(y){
+    return '<button class="picker-year-btn '+(cd.getFullYear()===y?'active':'')+'" onclick="pickerSelectYear('+y+',\''+pickerId+'\')">'+y+'</button>';
+  }).join('');
+  renderPickerMonths(pickerId, cd.getFullYear(), cd.getMonth());
+  p.style.display='block';
+  document.getElementById(overlayId).classList.add('open');
+}
+function renderPickerMonths(pickerId, year, activeMonth){
+  const isAdmin = pickerId==='admin-picker';
+  const cd = isAdmin ? adminCursorDate : cursorDate;
+  document.getElementById(isAdmin?'picker-months-admin':'picker-months-user').innerHTML =
+    MONTH_SHORT.map(function(m,i){
+      return '<button class="picker-month-btn '+(activeMonth===i && cd.getFullYear()===year?'active':'')+'" onclick="pickerSelectMonth('+i+','+year+',\''+pickerId+'\')">'+m+'</button>';
+    }).join('');
+}
+function pickerSelectYear(year, pickerId){
+  const isAdmin = pickerId==='admin-picker';
+  const cd = isAdmin ? adminCursorDate : cursorDate;
+  renderPickerMonths(pickerId, year, cd.getFullYear()===year ? cd.getMonth() : -1);
+  document.querySelectorAll('#'+(isAdmin?'picker-years-admin':'picker-years-user')+' .picker-year-btn').forEach(function(b){
+    b.classList.toggle('active', parseInt(b.textContent,10)===year);
+  });
+}
+function pickerSelectMonth(month, year, pickerId){
+  const isAdmin = pickerId==='admin-picker';
+  const overlayId = isAdmin ? 'picker-overlay-admin' : 'picker-overlay-user';
+  if(isAdmin){ adminCursorDate = new Date(year, month, 1); renderAdmin(); }
+  else { cursorDate = new Date(year, month, 1); render(); }
+  closePicker(pickerId, overlayId);
+}
+function closePicker(pickerId, overlayId){
+  document.getElementById(pickerId).style.display='none';
+  document.getElementById(overlayId).classList.remove('open');
+}
+
+/* ============================ SELEÇÃO MÚLTIPLA ============================ */
+
+function updateMultiSelBar(){
+  const bar = document.getElementById('multisel-bar');
+  const count = selectedDays.size;
+  if(count>0){
+    bar.classList.add('show');
+    document.getElementById('multisel-info').textContent = count+' dia'+(count>1?'s':'')+' selecionado'+(count>1?'s':'');
+  } else {
+    bar.classList.remove('show');
+  }
+}
+
+// devolve as chaves de dias úteis visíveis na vista atual (para shift+clique)
+function getAllWorkdayKeys(){
+  const hols = getHolidays(cursorDate);
+  const keys=[];
+  if(view==='week'){
+    const ws=getWeekStart(cursorDate);
+    for(let i=0;i<7;i++){ const d=new Date(ws); d.setDate(d.getDate()+i); const k=fmtKey(d); if(!getBlockedReason(k,hols)) keys.push(k); }
+  } else {
+    const y=cursorDate.getFullYear(), mo=cursorDate.getMonth(), dim=new Date(y,mo+1,0).getDate();
+    for(let i=1;i<=dim;i++){ const k=fmtKey(new Date(y,mo,i)); if(!getBlockedReason(k,hols)) keys.push(k); }
+  }
+  return keys;
+}
+
+// Clique esquerdo = seleção (acumula / shift = intervalo). Para editar um único
+// dia usa-se o botão direito → "Editar horas" no menu de contexto.
+/* ============================ TOQUE LONGO (mobile) = Ctrl+click (desktop) ============================ */
+let longPressTimer = null, longPressFired = false;
+const LONG_PRESS_MS = 480;
+
+function handleTouchStart(key, e){
+  longPressFired = false;
+  if(longPressTimer) clearTimeout(longPressTimer);
+  longPressTimer = setTimeout(function(){
+    longPressFired = true;
+    if(navigator.vibrate) navigator.vibrate(15);
+    handleDayClick(key, {ctrlKey:true, shiftKey:false, preventDefault:function(){}, stopPropagation:function(){}});
+  }, LONG_PRESS_MS);
+}
+function handleTouchMove(){
+  if(longPressTimer){ clearTimeout(longPressTimer); longPressTimer=null; }
+}
+function handleTouchEnd(e){
+  if(longPressTimer){ clearTimeout(longPressTimer); longPressTimer=null; }
+  if(longPressFired){
+    e.preventDefault(); // evita que o "click" sintético a seguir abra o modal de edição
+  }
+}
+
+function handleDayClick(key, e){
+  e.stopPropagation();
+  const hols = getHolidays(cursorDate);
+  if(getBlockedReason(key, hols)) return;
+
+  if(!e.shiftKey && !e.ctrlKey && !e.metaKey){
+    openModal(key);
+    return;
+  }
+
+  if(e.shiftKey && shiftAnchor){
+    const allKeys = getAllWorkdayKeys();
+    const ai = allKeys.indexOf(shiftAnchor), bi = allKeys.indexOf(key);
+    if(ai>=0 && bi>=0){
+      const from=Math.min(ai,bi), to=Math.max(ai,bi);
+      for(let i=from;i<=to;i++) selectedDays.add(allKeys[i]);
+    } else {
+      selectedDays.add(key);
+      shiftAnchor = key;
+    }
+  } else {
+    if(selectedDays.has(key)){
+      selectedDays.delete(key);
+      if(shiftAnchor===key) shiftAnchor=null;
+    } else {
+      selectedDays.add(key);
+      shiftAnchor = key;
+    }
+  }
+  updateMultiSelBar(); render();
+}
+
+function clearSelection(){ selectedDays.clear(); shiftAnchor=null; updateMultiSelBar(); render(); }
+
+/* ============================ MODAL MULTI-SELEÇÃO ============================ */
+
+function openMultiSelModal(){
+  if(selectedDays.size===0) return;
+  const count = selectedDays.size;
+  document.getElementById('multisel-modal-sub').textContent = count+' dia'+(count>1?'s':'')+' selecionado'+(count>1?'s':'');
+  document.getElementById('ms-folga-check').checked = false;
+  document.getElementById('ms-blocks-section').style.display='block';
+  buildTimeOptions(document.getElementById('ms-entry'), state.user.defaultEntry || '09:00');
+  buildTimeOptions(document.getElementById('ms-exit'), state.user.defaultExit || '13:00');
+  updateMsTotal();
+  document.getElementById('ms-entry').onchange = updateMsTotal;
+  document.getElementById('ms-exit').onchange = updateMsTotal;
+  document.getElementById('multisel-modal-wrap').classList.add('open');
+}
+function toggleMsFolga(){
+  const checked = document.getElementById('ms-folga-check').checked;
+  document.getElementById('ms-blocks-section').style.display = checked ? 'none' : 'block';
+}
+function updateMsTotal(){
+  const entry = document.getElementById('ms-entry').value, exit = document.getElementById('ms-exit').value;
+  const mins = toMins(exit)-toMins(entry), delta = mins-DAILY_MINS;
+  document.getElementById('ms-total-val').textContent = mins>0 ? fmtMins(mins) : '—';
+  const sv = document.getElementById('ms-saldo-val');
+  sv.textContent = fmtDelta(delta);
+  sv.style.color = delta>0?'#0F6E56':(delta<0?'#A32D2D':'var(--color-text-secondary)');
+}
+function closeMultiSel(){ document.getElementById('multisel-modal-wrap').classList.remove('open'); }
+function closeMultiSelOutside(e){ if(e.target===document.getElementById('multisel-modal-wrap')) closeMultiSel(); }
+
+async function saveMultiSel(){
+  const isFolga = document.getElementById('ms-folga-check').checked;
+  let blocks = [];
+  if(!isFolga){
+    const entry = document.getElementById('ms-entry').value, exit = document.getElementById('ms-exit').value;
+    if(toMins(exit)<=toMins(entry)){ showToast('Saída deve ser depois da entrada', true); return; }
+    blocks = [{entry:entry, exit:exit}];
+  }
+  const dates = Array.from(selectedDays);
+  const btn = document.getElementById('ms-save-btn');
+  setBtnLoading(btn, true);
+  try{
+    saveSnapshot();
+    await rpc('gsSaveBulkEntries', state.user.email, dates, blocks, isFolga);
+    dates.forEach(function(k){
+      state.entries[k] = isFolga ? {folga:true} : (blocks.length===1 ? blocks[0] : blocks);
+    });
+    closeMultiSel(); clearSelection(); render();
+    showToast('Aplicado a '+dates.length+' dia'+(dates.length>1?'s':''));
+  }catch(err){
+    showToast('Erro ao guardar: '+(err.message||err), true);
+  }finally{
+    setBtnLoading(btn, false);
+  }
+}
+
+/* ============================ MODAL — DIA ÚNICO ============================ */
+
+function buildBlockRow(idx){
+  const isFirst = idx===0;
+  return '<div class="block-row '+(isFirst?'first':'')+'" id="block-'+idx+'">'+
+    '<div class="field" style="margin:0"><label>Entrada</label><select class="time-select" id="b-entry-'+idx+'"></select></div>'+
+    '<div class="field" style="margin:0"><label>Saída</label><select class="time-select" id="b-exit-'+idx+'"></select></div>'+
+    (!isFirst ? '<button class="btn-remove-block" onclick="removeBlock('+idx+')">✕</button>' : '') +
+    '</div>';
+}
+function renderBlocks(){
+  document.getElementById('blocks-container').innerHTML = modalBlocks.map(function(_,i){ return buildBlockRow(i); }).join('');
+  const minEntry = state.minEntries && state.minEntries[modalDate];
+  const maxExit = state.maxExits && state.maxExits[modalDate];
+  const lastIdx = modalBlocks.length-1;
+  modalBlocks.forEach(function(b,i){
+    buildTimeOptions(document.getElementById('b-entry-'+i), b.entry, i===0 ? minEntry : null);
+    buildTimeOptions(document.getElementById('b-exit-'+i), b.exit, null, i===lastIdx ? maxExit : null);
+    // Sem auto-save por change: guarda tudo de uma vez quando o modal fecha (mais rápido).
+    document.getElementById('b-entry-'+i).addEventListener('change', updateModalTotal);
+    document.getElementById('b-exit-'+i).addEventListener('change', updateModalTotal);
+  });
+  document.getElementById('btn-add-block-wrap') && (document.getElementById('btn-add-block-wrap').style.display = modalBlocks.length>=MAX_BLOCKS ? 'none' : '');
+  updateModalTotal();
+}
+function addBlock(){
+  if(modalBlocks.length>=MAX_BLOCKS) return;
+  modalBlocks.push({entry:'09:00', exit:'13:00'});
+  renderBlocks();
+}
+function removeBlock(idx){ modalBlocks.splice(idx,1); renderBlocks(); }
+
+function updateModalTotal(){
+  const isFolga = document.getElementById('folga-check').checked;
+  if(isFolga){
+    document.getElementById('modal-total-val').textContent='0h';
+    const sv=document.getElementById('modal-saldo-val');
+    sv.textContent=fmtDelta(-DAILY_MINS); sv.style.color='#A32D2D';
+    return;
+  }
+  let total=0;
+  modalBlocks.forEach(function(_,i){
+    const en=document.getElementById('b-entry-'+i), ex=document.getElementById('b-exit-'+i);
+    if(en && ex){ const m=toMins(ex.value)-toMins(en.value); if(m>0) total+=m; }
+  });
+  const delta = total-DAILY_MINS;
+  document.getElementById('modal-total-val').textContent = fmtMins(total);
+  const sv = document.getElementById('modal-saldo-val');
+  sv.textContent = fmtDelta(delta);
+  sv.style.color = delta>0?'#0F6E56':(delta<0?'#A32D2D':'var(--color-text-secondary)');
+}
+
+function showSavedIndicator(){
+  const ind = document.getElementById('saved-indicator');
+  ind.classList.add('show');
+  if(savedTimer) clearTimeout(savedTimer);
+  savedTimer = setTimeout(function(){ ind.classList.remove('show'); }, 2000);
+}
+
+async function autoSaveModal(){
+  const blocks = modalBlocks.map(function(_,i){
+    return {
+      entry: (document.getElementById('b-entry-'+i)||{}).value || '09:00',
+      exit: (document.getElementById('b-exit-'+i)||{}).value || '13:00'
+    };
+  });
+  if(!blocks.every(function(b){ return toMins(b.exit)>toMins(b.entry); })) return;
+
+  saveSnapshot();
+  try{
+    await rpc('gsSaveEntry', state.user.email, modalDate, blocks, false);
+    state.entries[modalDate] = blocks.length===1 ? blocks[0] : blocks;
+    document.getElementById('btn-delete').style.display='inline-flex';
+    showSavedIndicator();
+    updateModalTotal(); render();
+  }catch(err){
+    showToast('Erro ao guardar: '+(err.message||err), true);
+  }
+}
+
+async function toggleFolgaCheck(){
+  if(document.getElementById('folga-check').disabled) return; // pedido já pendente — usar "Cancelar pedido"
+  const checked = document.getElementById('folga-check').checked;
+  const wasFolga = !!(state.entries[modalDate] && state.entries[modalDate].folga);
+  saveSnapshot();
+  try{
+    if(checked){
+      // Pedir folga (fica pendente até o admin aprovar) — não marca já como folga.
+      const res = await rpc('gsRequestFolga', state.user.email, modalDate);
+      if(!res || !res.ok){ showToast((res&&res.error)||'Erro ao pedir', true); document.getElementById('folga-check').checked=false; return; }
+      state.folgaStatus[modalDate] = 'Pendente';
+      showToast('Pedido de folga enviado, a aguardar aprovação');
+    } else if(wasFolga) {
+      // Já estava aprovado como folga — devolver o dia (imediato, sem aprovação).
+      document.getElementById('blocks-section').classList.remove('hidden');
+      const blocks = [{entry: state.user.defaultEntry||'09:00', exit: state.user.defaultExit||'13:00'}];
+      modalBlocks = blocks.slice();
+      renderBlocks();
+      await rpc('gsSaveEntry', state.user.email, modalDate, blocks, false);
+      state.entries[modalDate] = blocks[0];
+      document.getElementById('btn-delete').style.display='inline-flex';
+      showSavedIndicator();
+    }
+    updateModalTotal();
+    openModal(modalDate); // reconstrói o modal para refletir o novo estado (pendente/normal)
+    render();
+  }catch(err){
+    showToast('Erro ao guardar: '+(err.message||err), true);
+  }
+}
+
+// Funcionário cancela um pedido pendente, ou dispensa uma rejeição.
+async function clearFolgaRequest(){
+  try{
+    await rpc('gsClearFolgaRequest', state.user.email, modalDate);
+    delete state.folgaStatus[modalDate];
+    openModal(modalDate);
+    render();
+  }catch(err){
+    showToast('Erro: '+(err.message||err), true);
+  }
+}
+
+function openModal(dateKey){
+  modalDate = dateKey;
+  const date = new Date(dateKey+'T00:00:00');
+  const parts = dateKey.split('-');
+  document.getElementById('modal-title').textContent = WEEK_DAYS_PT[date.getDay()]+', '+parts[2]+'/'+parts[1]+'/'+parts[0];
+
+  const existing = state.entries[dateKey];
+  const isFolga = existing && existing.folga;
+  const fStatus = state.folgaStatus && state.folgaStatus[dateKey];
+  const folgaCheck = document.getElementById('folga-check');
+  folgaCheck.checked = !!isFolga || fStatus==='Pendente';
+  folgaCheck.disabled = fStatus==='Pendente';
+  document.getElementById('blocks-section').classList.toggle('hidden', !!isFolga);
+
+  const folgaNote = document.getElementById('modal-folga-status-note');
+  if(fStatus==='Pendente'){
+    folgaNote.style.display='block';
+    folgaNote.innerHTML = '⏳ Pedido de folga enviado, a aguardar aprovação do admin. <button class="btn-add-block" style="display:inline;padding:0;margin:0" onclick="clearFolgaRequest()">Cancelar pedido</button>';
+    folgaNote.className = 'info-msg';
+    folgaNote.style.cssText += 'display:block;color:#92722A;background:#FCF3D9;';
+  } else if(fStatus==='Rejeitado'){
+    folgaNote.style.display='block';
+    folgaNote.innerHTML = '❌ O pedido de folga para este dia foi rejeitado pelo admin. <button class="btn-add-block" style="display:inline;padding:0;margin:0" onclick="clearFolgaRequest()">Ok, entendido</button>';
+    folgaNote.className = 'info-msg';
+    folgaNote.style.cssText += 'display:block;color:#B91C1C;background:#FEF2F2;';
+  } else {
+    folgaNote.style.display='none';
+  }
+
+  if(!isFolga){
+    modalBlocks = existing ? (Array.isArray(existing) ? existing.map(function(b){return Object.assign({},b);}) : [Object.assign({},existing)])
+                            : [{entry: state.user.defaultEntry||'09:00', exit: state.user.defaultExit||'13:00'}];
+  } else {
+    modalBlocks = [{entry: state.user.defaultEntry||'09:00', exit: state.user.defaultExit||'13:00'}];
+  }
+
+  document.getElementById('btn-delete').style.display = existing ? 'inline-flex' : 'none';
+  document.getElementById('saved-indicator').classList.remove('show');
+  const minEntryNote = document.getElementById('modal-min-entry-note');
+  const minEntry = state.minEntries && state.minEntries[dateKey];
+  const maxExit = state.maxExits && state.maxExits[dateKey];
+  if(minEntry && maxExit){ minEntryNote.textContent = '🔒 O administrador definiu: entrada não antes das '+minEntry+' e saída não depois das '+maxExit+'.'; minEntryNote.style.display='block'; }
+  else if(minEntry){ minEntryNote.textContent = '🔒 O administrador definiu a entrada mínima das '+minEntry+' para este dia.'; minEntryNote.style.display='block'; }
+  else if(maxExit){ minEntryNote.textContent = '🔒 O administrador definiu a saída máxima das '+maxExit+' para este dia.'; minEntryNote.style.display='block'; }
+  else { minEntryNote.style.display='none'; }
+  renderBlocks();
+  document.getElementById('modal-wrap').classList.add('open');
+}
+function closeModalNoSave(){
+  document.getElementById('modal-wrap').classList.remove('open');
+  modalDate=null;
+}
+async function closeModal(){
+  // Fechar sem guardar — descarta alterações não guardadas.
+  closeModalNoSave();
+}
+function closeModalOutside(e){ if(e.target===document.getElementById('modal-wrap')) closeModal(); }
+
+async function saveAndCloseModal(){
+  const fStatus = state.folgaStatus && state.folgaStatus[modalDate];
+  const blocksHidden = document.getElementById('blocks-section').classList.contains('hidden');
+  // Só envia para o servidor se há horas para guardar (não pendente, não folga já aprovada)
+  if(modalDate && !blocksHidden && fStatus !== 'Pendente'){
+    await autoSaveModal();
+  }
+  closeModalNoSave();
+}
+
+async function deleteEntry(){
+  saveSnapshot();
+  try{
+    await rpc('gsDeleteEntry', state.user.email, modalDate);
+    delete state.entries[modalDate];
+    closeModalNoSave(); render();
+    showToast('Registo apagado');
+  }catch(err){
+    showToast('Erro ao apagar: '+(err.message||err), true);
+  }
+}
+
+/* ============================ UNDO / REDO ============================ */
+
+function saveSnapshot(){
+  const snap = JSON.stringify(state.entries);
+  if(undoStack.length>0 && undoStack[undoStack.length-1]===snap) return;
+  undoStack.push(snap);
+  if(undoStack.length>MAX_UNDO) undoStack.shift();
+  redoStack = [];
+  updateUndoRedoBtns();
+}
+
+function updateUndoRedoBtns(){
+  const bu=document.getElementById('btn-undo'), br=document.getElementById('btn-redo');
+  if(bu) bu.disabled = undoStack.length===0;
+  if(br) br.disabled = redoStack.length===0;
+}
+
+// Sincroniza com o servidor as diferenças entre o estado antigo e o novo
+async function syncEntriesDiff(oldE, newE){
+  const keys = new Set(Object.keys(oldE).concat(Object.keys(newE)));
+  const ops = [];
+  keys.forEach(function(k){
+    const a = JSON.stringify(oldE[k]||null), b = JSON.stringify(newE[k]||null);
+    if(a===b) return;
+    if(!newE[k]){
+      ops.push(rpc('gsDeleteEntry', state.user.email, k));
+    } else {
+      const d = entryData(newE[k]);
+      const blocks = d.isFolga ? [] : entryBlocks(newE[k]);
+      ops.push(rpc('gsSaveEntry', state.user.email, k, blocks, d.isFolga));
+    }
+  });
+  if(ops.length===0) return;
+  showOverlay('A sincronizar...');
+  try{ await Promise.all(ops); } finally { hideOverlay(); }
+}
+
+async function doUndo(){
+  if(undoStack.length===0) return;
+  redoStack.push(JSON.stringify(state.entries));
+  const newEntries = JSON.parse(undoStack.pop());
+  const oldEntries = state.entries;
+  state.entries = newEntries;
+  updateUndoRedoBtns(); render();
+  showToast('Ação desfeita');
+  try{ await syncEntriesDiff(oldEntries, newEntries); }
+  catch(err){ showToast('Erro a sincronizar: '+(err.message||err), true); }
+}
+
+async function doRedo(){
+  if(redoStack.length===0) return;
+  undoStack.push(JSON.stringify(state.entries));
+  updateUndoRedoBtns();
+  const newEntries = JSON.parse(redoStack.pop());
+  const oldEntries = state.entries;
+  state.entries = newEntries;
+  render();
+  showToast('Ação refeita');
+  try{ await syncEntriesDiff(oldEntries, newEntries); }
+  catch(err){ showToast('Erro a sincronizar: '+(err.message||err), true); }
+}
+
+/* ============================ MENU CONTEXTO + COMENTÁRIOS ============================ */
+
+function openCtxMenu(e, dateKey){
+  e.preventDefault(); e.stopPropagation();
+  ctxDate = dateKey;
+  const hols = getHolidays(new Date(dateKey+'T00:00:00'));
+  const blocked = !!getBlockedReason(dateKey, hols);
+  const hasComment = !!state.comments[dateKey];
+  document.getElementById('ctx-edit').style.display = blocked ? 'none' : 'flex';
+  document.getElementById('ctx-comment').style.display = blocked ? 'none' : 'flex';
+  document.getElementById('ctx-del-comment').style.display = hasComment ? 'flex' : 'none';
+  const menu = document.getElementById('ctx-menu');
+  menu.style.left = Math.min(e.clientX, window.innerWidth-170)+'px';
+  menu.style.top = Math.min(e.clientY, window.innerHeight-120)+'px';
+  menu.classList.add('open');
+}
+function closeCtxMenu(){ document.getElementById('ctx-menu').classList.remove('open'); ctxDate=null; }
+function ctxEdit(){ const k=ctxDate; closeCtxMenu(); if(k) openModal(k); }
+
+function ctxComment(){
+  const key = ctxDate; closeCtxMenu();
+  if(!key) return;
+  openCmtModal(key, state.user.email, state.comments[key] || '', 'user');
+}
+async function ctxDelComment(){
+  const key = ctxDate; closeCtxMenu();
+  if(!key) return;
+  try{
+    await rpc('gsSaveComment', state.user.email, key, '');
+    delete state.comments[key];
+    render(); showToast('Comentário removido');
+  }catch(err){ showToast('Erro: '+(err.message||err), true); }
+}
+
+// Modal de comentário partilhado entre a vista do utilizador e a do admin.
+// context: 'user' -> guarda em state.comments / re-renderiza o calendário do utilizador
+//          'admin' -> guarda em state.admin.commentsByEmail[adminSelectedEmail] / re-renderiza o admin
+let cmtModalContext = 'user';
+function openCmtModal(dateKey, email, text, context){
+  cmtModalContext = context || 'user';
+  const parts = dateKey.split('-');
+  document.getElementById('cmt-modal-title').textContent = 'Comentário — '+parts[2]+'/'+parts[1]+'/'+parts[0];
+  document.getElementById('cmt-textarea').value = text || '';
+  document.getElementById('cmt-modal-wrap').dataset.dateKey = dateKey;
+  document.getElementById('cmt-modal-wrap').dataset.email = email;
+  document.getElementById('cmt-modal-wrap').classList.add('open');
+  document.getElementById('cmt-textarea').focus();
+}
+function closeCmt(){ document.getElementById('cmt-modal-wrap').classList.remove('open'); }
+function closeCmtOutside(e){ if(e.target===document.getElementById('cmt-modal-wrap')) closeCmt(); }
+async function saveCmt(){
+  const text = document.getElementById('cmt-textarea').value.trim();
+  const dateKey = document.getElementById('cmt-modal-wrap').dataset.dateKey;
+  const email = document.getElementById('cmt-modal-wrap').dataset.email;
+  try{
+    await rpc('gsSaveComment', email, dateKey, text);
+    if(cmtModalContext==='admin'){
+      const cm = state.admin.commentsByEmail[adminSelectedEmail] = state.admin.commentsByEmail[adminSelectedEmail] || {};
+      if(text) cm[dateKey]=text; else delete cm[dateKey];
+      closeCmt(); renderAdmin();
+    } else {
+      if(text) state.comments[dateKey]=text; else delete state.comments[dateKey];
+      closeCmt(); render();
+    }
+    showToast(text ? 'Comentário guardado' : 'Comentário removido');
+  }catch(err){ showToast('Erro: '+(err.message||err), true); }
+}
+
+/* ============================ ADMIN: TRANCAR HORÁRIO (entrada mín. / saída máx.) ============================ */
+
+let adminLockDate = null;
+
+function openAdminLockModal(dateKey){
+  if(!adminSelectedEmail) return;
+  adminLockDate = dateKey;
+  const emp = state.admin.employees.find(function(u){ return u.email===adminSelectedEmail; });
+  const date = new Date(dateKey+'T00:00:00');
+  const parts = dateKey.split('-');
+  document.getElementById('lock-modal-title').textContent = '🔒 ' + (emp?emp.name:adminSelectedEmail);
+  document.getElementById('lock-modal-sub').textContent = WEEK_DAYS_PT[date.getDay()]+', '+parts[2]+'/'+parts[1]+'/'+parts[0];
+
+  const curMin = (state.admin.minEntriesByEmail[adminSelectedEmail]||{})[dateKey] || '';
+  const curMax = (state.admin.maxExitsByEmail[adminSelectedEmail]||{})[dateKey] || '';
+  const curFolga = !!(state.admin.entriesByEmail[adminSelectedEmail]||{})[dateKey]?.folga;
+
+  const selMin = document.getElementById('lock-min-entry');
+  buildTimeOptions(selMin, curMin);
+  selMin.insertBefore(new Option('Sem restrição',''), selMin.firstChild);
+  selMin.value = curMin;
+
+  const selMax = document.getElementById('lock-max-exit');
+  buildTimeOptions(selMax, curMax);
+  selMax.insertBefore(new Option('Sem restrição',''), selMax.firstChild);
+  selMax.value = curMax;
+
+  // Checkbox de folga obrigatória
+  const folgaCheck = document.getElementById('lock-folga-check');
+  folgaCheck.checked = curFolga;
+  toggleLockFolgaUI(curFolga);
+
+  const curComment = (state.admin.commentsByEmail[adminSelectedEmail]||{})[dateKey] || '';
+  document.getElementById('lock-comment-btn-label').textContent = curComment ? 'Editar comentário' : 'Adicionar comentário';
+
+  document.getElementById('lock-modal-wrap').classList.add('open');
+}
+
+function toggleLockFolgaUI(isFolga){
+  document.getElementById('lock-min-entry').closest('.field').style.display = isFolga ? 'none' : '';
+  document.getElementById('lock-max-exit').closest('.field').style.display = isFolga ? 'none' : '';
+}
+function openAdminCommentModal(){
+  if(!adminLockDate || !adminSelectedEmail) return;
+  const dateKey = adminLockDate, email = adminSelectedEmail;
+  const curComment = (state.admin.commentsByEmail[email]||{})[dateKey] || '';
+  closeLockModal();
+  openCmtModal(dateKey, email, curComment, 'admin');
+}
+document.getElementById('lock-folga-check').addEventListener('change', function(){ toggleLockFolgaUI(this.checked); });
+function closeLockModal(){ document.getElementById('lock-modal-wrap').classList.remove('open'); adminLockDate=null; }
+function closeLockModalOutside(e){ if(e.target===document.getElementById('lock-modal-wrap')) closeLockModal(); }
+
+async function saveAdminLock(){
+  const minEntry = document.getElementById('lock-min-entry').value;
+  const maxExit = document.getElementById('lock-max-exit').value;
+  const folgaObrig = document.getElementById('lock-folga-check').checked;
+  const dateKey = adminLockDate;
+  try{
+    if(folgaObrig){
+      // Folga obrigatória: grava directamente como folga no servidor
+      const res = await rpc('gsAdminSetFolga', adminSelectedEmail, dateKey, true);
+      if(!res || res.ok===false){ showToast((res&&res.error)||'Erro ao gravar', true); return; }
+      const eMap = state.admin.entriesByEmail[adminSelectedEmail] = state.admin.entriesByEmail[adminSelectedEmail]||{};
+      eMap[dateKey] = {folga:true};
+      // Limpa restrições de horário para este dia (não fazem sentido se for folga)
+      const minMap = state.admin.minEntriesByEmail[adminSelectedEmail]||{};
+      const maxMap = state.admin.maxExitsByEmail[adminSelectedEmail]||{};
+      delete minMap[dateKey]; delete maxMap[dateKey];
+      // Remove pedido pendente, se existia
+      const fMap = state.admin.folgaStatusByEmail[adminSelectedEmail]||{};
+      delete fMap[dateKey];
+      state.admin.pendingRequests = (state.admin.pendingRequests||[]).filter(function(r){ return !(r.email===adminSelectedEmail && r.date===dateKey); });
+    } else {
+      const res = await rpc('gsSetEntryLock', {email: adminSelectedEmail, date: dateKey, minEntry: minEntry, maxExit: maxExit});
+      if(!res || res.ok===false){ showToast((res&&res.error)||'Erro ao gravar', true); return; }
+      const minMap = state.admin.minEntriesByEmail[adminSelectedEmail] = state.admin.minEntriesByEmail[adminSelectedEmail]||{};
+      const maxMap = state.admin.maxExitsByEmail[adminSelectedEmail] = state.admin.maxExitsByEmail[adminSelectedEmail]||{};
+      if(minEntry) minMap[dateKey]=minEntry; else delete minMap[dateKey];
+      if(maxExit) maxMap[dateKey]=maxExit; else delete maxMap[dateKey];
+    }
+    closeLockModal(); renderAdmin(); renderAdminOverview();
+    showToast(folgaObrig ? 'Folga obrigatória marcada' : 'Restrição guardada');
+  }catch(err){ showToast('Erro: '+(err.message||err), true); }
+}
+
+/* ============================ CONFIRMAÇÃO DE PASSWORD (ações sensíveis do admin) ============================ */
+
+let passModalConfirmFn = null;
+
+function openPassModal(onConfirm){
+  passModalConfirmFn = onConfirm;
+  document.getElementById('pass-modal-input').value = '';
+  document.getElementById('pass-modal-err').style.display='none';
+  document.getElementById('pass-modal-wrap').classList.add('open');
+  setTimeout(function(){ document.getElementById('pass-modal-input').focus(); }, 50);
+}
+function closePassModal(){ document.getElementById('pass-modal-wrap').classList.remove('open'); passModalConfirmFn=null; }
+function closePassModalOutside(e){ if(e.target===document.getElementById('pass-modal-wrap')) closePassModal(); }
+async function confirmPassModal(){
+  const pass = document.getElementById('pass-modal-input').value;
+  const err = document.getElementById('pass-modal-err');
+  try{
+    const res = await rpc('gsVerifyPassword', state.user.email, pass);
+    if(!res || !res.ok){ err.textContent = (res&&res.error)||'Password incorreta.'; err.style.display='block'; return; }
+    const fn = passModalConfirmFn;
+    closePassModal();
+    if(fn) fn();
+  }catch(e){ err.textContent = 'Erro: '+(e.message||e); err.style.display='block'; }
+}
+
+/* ============================ ESTATÍSTICAS ============================ */
+
+function setStatsView(v){
+  statsView=v;
+  document.getElementById('stats-btn-week').classList.toggle('active', v==='week');
+  document.getElementById('stats-btn-month').classList.toggle('active', v==='month');
+  renderStats();
+}
+
+function toggleStats(){
+  statsVisible = !statsVisible;
+  const panel = document.getElementById('stats-panel');
+  if(statsVisible){ renderStats(); panel.style.display='block'; }
+  else panel.style.display='none';
+}
+
+function toggleMonthsExpand(){ monthsExpanded = !monthsExpanded; renderStats(); }
+
+function renderStats(entriesObj, prefix, viewMode, expanded, toggleFn){
+  const ue = entriesObj || state.entries;
+  prefix = prefix || 'stats-';
+  viewMode = viewMode || statsView;
+  if(expanded===undefined) expanded = monthsExpanded;
+  toggleFn = toggleFn || 'toggleMonthsExpand';
+  const now = new Date();
+
+  // ---- Donut: em vista "Semana" mostra só a semana atual; em "Mês" mostra
+  // a distribuição desde START_DATE (só dias úteis com registo) ----
+  let over=0, exact=0, under=0, folga=0;
+  if(viewMode==='week'){
+    const ws = getWeekStart(now);
+    for(let i=0;i<7;i++){
+      const d=new Date(ws); d.setDate(d.getDate()+i);
+      const k=fmtKey(d);
+      if(k < START_DATE) continue;
+      if(!isWorkDay(k, getHolidays(d))) continue;
+      const dt = entryData(ue[k]);
+      if(!dt.exists) continue;
+      if(dt.isFolga){ folga++; continue; }
+      const delta = dt.mins - DAILY_MINS;
+      if(delta>0) over++; else if(delta<0) under++; else exact++;
+    }
+  } else {
+    Object.keys(ue).forEach(function(k){
+      if(k < START_DATE) return;
+      if(!isWorkDay(k, getHolidays(new Date(k+'T00:00:00')))) return;
+      const d = entryData(ue[k]);
+      if(!d.exists) return;
+      if(d.isFolga){ folga++; return; }
+      const delta = d.mins - DAILY_MINS;
+      if(delta>0) over++; else if(delta<0) under++; else exact++;
+    });
+  }
+  const total = over+exact+under+folga || 1;
+  const circ = 2*Math.PI*35;
+  const overArc=(over/total)*circ, exactArc=(exact/total)*circ, underArc=(under/total)*circ, folgaArc=(folga/total)*circ;
+  document.getElementById(prefix+'donut').innerHTML =
+    '<circle cx="50" cy="50" r="35" fill="none" stroke="var(--color-background-primary)" stroke-width="14"/>'+
+    '<circle cx="50" cy="50" r="35" fill="none" stroke="#0F6E56" stroke-width="14" stroke-dasharray="'+overArc+' '+(circ-overArc)+'" stroke-dashoffset="0" transform="rotate(-90 50 50)"/>'+
+    '<circle cx="50" cy="50" r="35" fill="none" stroke="#185FA5" stroke-width="14" stroke-dasharray="'+exactArc+' '+(circ-exactArc)+'" stroke-dashoffset="'+(-overArc)+'" transform="rotate(-90 50 50)"/>'+
+    '<circle cx="50" cy="50" r="35" fill="none" stroke="#A32D2D" stroke-width="14" stroke-dasharray="'+underArc+' '+(circ-underArc)+'" stroke-dashoffset="'+(-(overArc+exactArc))+'" transform="rotate(-90 50 50)"/>'+
+    '<circle cx="50" cy="50" r="35" fill="none" stroke="#F59E0B" stroke-width="14" stroke-dasharray="'+folgaArc+' '+(circ-folgaArc)+'" stroke-dashoffset="'+(-(overArc+exactArc+underArc))+'" transform="rotate(-90 50 50)"/>'+
+    '<text x="50" y="46" text-anchor="middle" font-size="15" font-weight="500" fill="var(--color-text-primary)">'+(over+exact+under+folga)+'</text>'+
+    '<text x="50" y="58" text-anchor="middle" font-size="9" fill="var(--color-text-secondary)">dias</text>';
+
+  document.getElementById(prefix+'legend').innerHTML =
+    '<div class="legend-item"><div class="legend-left"><div class="legend-dot" style="background:#0F6E56"></div><span class="legend-label">A mais</span></div><span class="legend-val pos">'+over+'<span class="legend-pct"> '+Math.round(over/total*100)+'%</span></span></div>'+
+    '<div class="legend-item"><div class="legend-left"><div class="legend-dot" style="background:#185FA5"></div><span class="legend-label">Exacto</span></div><span class="legend-val zero">'+exact+'<span class="legend-pct"> '+Math.round(exact/total*100)+'%</span></span></div>'+
+    '<div class="legend-item"><div class="legend-left"><div class="legend-dot" style="background:#A32D2D"></div><span class="legend-label">A menos</span></div><span class="legend-val neg">'+under+'<span class="legend-pct"> '+Math.round(under/total*100)+'%</span></span></div>'+
+    '<div class="legend-item"><div class="legend-left"><div class="legend-dot" style="background:#F59E0B"></div><span class="legend-label">Folga</span></div><span class="legend-val" style="color:#D97706">'+folga+'<span class="legend-pct"> '+Math.round(folga/total*100)+'%</span></span></div>';
+
+  // ---- Barras ----
+  if(viewMode==='month'){
+    document.getElementById(prefix+'bars-title').textContent = 'Saldo por mês';
+    const allMonths = [];
+    const startM = new Date(START_DATE+'T00:00:00');
+    for(let d=new Date(startM.getFullYear(), startM.getMonth(), 1); d<=now; d.setMonth(d.getMonth()+1)){
+      const y=d.getFullYear(), mo=d.getMonth();
+      let mins=0;
+      const dim=new Date(y,mo+1,0).getDate();
+      for(let dd=1; dd<=dim; dd++){
+        const k=fmtKey(new Date(y,mo,dd));
+        if(!ue[k] || k<START_DATE) continue;
+        if(!isWorkDay(k, getHolidays(new Date(k+'T00:00:00')))) continue;
+        const dt=entryData(ue[k]);
+        mins += dt.isFolga ? -DAILY_MINS : (dt.mins-DAILY_MINS);
+      }
+      allMonths.push({label:MONTH_SHORT[mo], mins:mins});
+    }
+    const last4 = allMonths.slice(-4);
+    const hidden = allMonths.slice(0,-4);
+    const periods = expanded ? allMonths : last4;
+    const maxAbs = Math.max.apply(null, periods.map(function(p){return Math.abs(p.mins);}).concat([1]));
+    let barsHtml='';
+    if(!expanded && hidden.length>0){
+      barsHtml += '<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">'+
+                   '<span class="bar-label">'+allMonths[0].label+'</span>'+
+                   '<span style="font-size:10px;color:var(--color-text-secondary)">···</span></div>';
+    }
+    barsHtml += periods.map(function(p){
+      const pct = Math.round(Math.abs(p.mins)/maxAbs*100);
+      const color = p.mins>0?'#0F6E56':(p.mins<0?'#A32D2D':'#B0B0B0');
+      const cls = p.mins>0?'pos':(p.mins<0?'neg':'zero');
+      return '<div class="bar-row"><span class="bar-label">'+p.label+'</span>'+
+             '<div class="bar-track"><div class="bar-fill" style="width:'+Math.max(pct,2)+'%;background:'+color+'"></div></div>'+
+             '<span class="bar-val '+cls+'">'+(p.mins===0?'0h':fmtDelta(p.mins))+'</span></div>';
+    }).join('');
+    if(allMonths.length>4){
+      barsHtml += '<button class="months-expand-btn" onclick="'+toggleFn+'()">'+(expanded?'▴':'▾')+' '+
+                   (expanded?'Mostrar menos':'Ver todos os meses')+'</button>';
+    }
+    document.getElementById(prefix+'bars').innerHTML = barsHtml;
+  } else {
+    document.getElementById(prefix+'bars-title').textContent = 'Semanas do mês atual';
+    const y=now.getFullYear(), mo=now.getMonth();
+    const firstDay = new Date(y,mo,1);
+    let ws = getWeekStart(firstDay);
+    const periods=[];
+    for(let w=0; w<5; w++){
+      const we=new Date(ws); we.setDate(we.getDate()+6);
+      let mins=0;
+      for(let i=0;i<7;i++){
+        const d=new Date(ws); d.setDate(d.getDate()+i);
+        const k=fmtKey(d);
+        if(!ue[k] || k<START_DATE) continue;
+        if(!isWorkDay(k, getHolidays(d))) continue;
+        const dt=entryData(ue[k]);
+        mins += dt.isFolga ? -DAILY_MINS : (dt.mins-DAILY_MINS);
+      }
+      periods.push({label: ws.getDate()+'–'+we.getDate(), mins:mins});
+      ws = new Date(ws); ws.setDate(ws.getDate()+7);
+    }
+    const maxAbs = Math.max.apply(null, periods.map(function(p){return Math.abs(p.mins);}).concat([1]));
+    document.getElementById(prefix+'bars').innerHTML = periods.map(function(p){
+      const pct = Math.round(Math.abs(p.mins)/maxAbs*100);
+      const color = p.mins>0?'#0F6E56':(p.mins<0?'#A32D2D':'#B0B0B0');
+      const cls = p.mins>0?'pos':(p.mins<0?'neg':'zero');
+      return '<div class="bar-row"><span class="bar-label">'+p.label+'</span>'+
+             '<div class="bar-track"><div class="bar-fill" style="width:'+Math.max(pct,2)+'%;background:'+color+'"></div></div>'+
+             '<span class="bar-val '+cls+'">'+(p.mins===0?'0h':fmtDelta(p.mins))+'</span></div>';
+    }).join('');
+  }
+}
+
+/* ---- Estatísticas (vista do admin sobre o funcionário selecionado) ---- */
+let adminStatsView='month', adminMonthsExpanded=false;
+function setAdminStatsView(v){
+  adminStatsView=v;
+  document.getElementById('admin-stats-btn-week').classList.toggle('active', v==='week');
+  document.getElementById('admin-stats-btn-month').classList.toggle('active', v==='month');
+  renderAdminStats();
+}
+function toggleAdminMonthsExpand(){ adminMonthsExpanded = !adminMonthsExpanded; renderAdminStats(); }
+function renderAdminStats(){
+  ensureAdminSelector();
+  if(!adminSelectedEmail) return;
+  const entries = state.admin.entriesByEmail[adminSelectedEmail] || {};
+  renderStats(entries, 'admin-stats-', adminStatsView, adminMonthsExpanded, 'toggleAdminMonthsExpand');
+}
+
+/* ============================ ADMIN ============================ */
+
+function renderAdminOverview(){
+  renderPendingRequests();
+  const emps = state.admin.employees;
+  if(!emps.length){
+    document.getElementById('admin-cards').innerHTML = '<p style="font-size:13px;color:var(--color-text-secondary);grid-column:1/-1">Sem funcionários ativos.</p>';
+    return;
+  }
+  document.getElementById('admin-cards').innerHTML = emps.map(function(u){
+    const entries = state.admin.entriesByEmail[u.email] || {};
+    const sWeek = calcSaldos(entries, 'week', new Date());
+    const sMonth = calcSaldos(entries, 'month', new Date());
+    const dias = (sMonth.total/DAILY_MINS).toFixed(1);
+    return '<div class="emp-card" onclick="setAdminTab(\'calendar\');setAdminUser(\''+u.email+'\')">'+
+      '<div class="emp-name"><div class="avatar" style="width:24px;height:24px;font-size:10px">'+initials(u.name)+'</div>'+u.name+'</div>'+
+      '<div class="emp-row"><span>Saldo total</span><span class="'+(sMonth.total>=0?'pos':'neg')+'" style="font-size:13px;font-weight:500">'+fmtDelta(sMonth.total)+'</span></div>'+
+      '<div class="emp-row"><span>Dias de folga</span><span>'+(dias>0?'+':'')+dias+' dias</span></div>'+
+      '<div class="emp-row"><span>Esta semana</span><span>'+fmtDelta(sWeek.periodo)+'</span></div>'+
+      '</div>';
+  }).join('');
+}
+
+function renderPendingRequests(){
+  const reqs = state.admin.pendingRequests || [];
+  const container = document.getElementById('admin-pending-requests');
+  if(!reqs.length){ container.innerHTML=''; return; }
+  container.innerHTML = '<div class="stats-title" style="margin-bottom:0.5rem">Pedidos de folga pendentes</div>' +
+    reqs.map(function(r){
+      const parts = r.date.split('-');
+      const date = new Date(r.date+'T00:00:00');
+      const dateLabel = WEEK_DAYS_PT[date.getDay()]+', '+parts[2]+'/'+parts[1]+'/'+parts[0];
+      return '<div class="req-card">'+
+        '<div class="req-info">'+r.name+'<span class="req-date">'+dateLabel+'</span></div>'+
+        '<div class="req-btns">'+
+          '<button class="req-btn req-approve" onclick="respondFolgaRequest(\''+r.email+'\',\''+r.date+'\',true)">✓ Aprovar</button>'+
+          '<button class="req-btn req-reject" onclick="respondFolgaRequest(\''+r.email+'\',\''+r.date+'\',false)">✕ Rejeitar</button>'+
+        '</div>'+
+      '</div>';
+    }).join('') +
+    '<div class="sdivider"></div>';
+}
+
+async function respondFolgaRequest(email, dateKey, approve){
+  try{
+    const res = await rpc('gsRespondFolgaRequest', email, dateKey, approve);
+    if(!res || !res.ok){ showToast((res&&res.error)||'Erro', true); return; }
+    state.admin.pendingRequests = (state.admin.pendingRequests||[]).filter(function(r){ return !(r.email===email && r.date===dateKey); });
+    const fMap = state.admin.folgaStatusByEmail[email] = state.admin.folgaStatusByEmail[email] || {};
+    if(approve){
+      delete fMap[dateKey];
+      const eMap = state.admin.entriesByEmail[email] = state.admin.entriesByEmail[email] || {};
+      eMap[dateKey] = {folga:true};
+    } else {
+      fMap[dateKey] = 'Rejeitado';
+    }
+    renderPendingRequests();
+    if(adminSelectedEmail===email) renderAdmin();
+    showToast(approve ? 'Pedido aprovado' : 'Pedido rejeitado');
+  }catch(e){
+    showToast('Erro: '+(e.message||e), true);
+  }
+}
+
+function ensureAdminSelector(){
+  const emps = state.admin.employees;
+  if(!adminSelectedEmail && emps.length>0) adminSelectedEmail = emps[0].email;
+  const html = emps.map(function(u){
+    return '<button class="sel-btn '+(adminSelectedEmail===u.email?'active':'')+'" onclick="setAdminUser(\''+u.email+'\')">'+u.name+'</button>';
+  }).join('');
+  document.getElementById('admin-user-selector').innerHTML = html;
+}
+
+function renderAdmin(){
+  ensureAdminSelector();
+  if(!adminSelectedEmail) return;
+  const entries = state.admin.entriesByEmail[adminSelectedEmail] || {};
+  renderCalendar(entries, state.admin.commentsByEmail[adminSelectedEmail] || {}, adminView, adminCursorDate, 'admin-cal-container', false,
+    combineLocks(state.admin.minEntriesByEmail[adminSelectedEmail], state.admin.maxExitsByEmail[adminSelectedEmail], state.admin.folgaStatusByEmail[adminSelectedEmail]));
+  const sTotal = calcSaldos(entries, 'month', new Date());
+  const sPeriodo = calcSaldos(entries, adminView, adminCursorDate);
+  const sv = document.getElementById('admin-saldo-total');
+  sv.textContent = fmtDelta(sTotal.total); sv.className='val '+(sTotal.total>0?'pos':(sTotal.total<0?'neg':'zero'));
+  document.getElementById('admin-saldo-total-dias').textContent = fmtDias(sTotal.total);
+  const sp = document.getElementById('admin-saldo-periodo');
+  sp.textContent = fmtDelta(sPeriodo.periodo); sp.className='val '+(sPeriodo.periodo>0?'pos':(sPeriodo.periodo<0?'neg':'zero'));
+  document.getElementById('admin-periodo-label').textContent = adminView==='week'?'Esta semana':'Este mês';
+  renderAdminStats();
+}
+function setAdminView(v){
+  adminView=v;
+  adminCursorDate = new Date();
+  document.getElementById('admin-btn-week').classList.toggle('active', v==='week');
+  document.getElementById('admin-btn-month').classList.toggle('active', v==='month');
+  renderAdmin();
+}
+function adminNavigate(dir){
+  if(adminView==='week') adminCursorDate.setDate(adminCursorDate.getDate()+dir*7);
+  else adminCursorDate.setMonth(adminCursorDate.getMonth()+dir);
+  renderAdmin();
+}
+function setAdminUser(email){
+  adminSelectedEmail=email;
+  renderAdmin();
+}
+
+function setAdminTab(tab){
+  ['overview','calendar','closed','users','export'].forEach(function(t){
+    document.getElementById('tab-'+t).classList.toggle('active', t===tab);
+    document.getElementById('admin-'+t+'-tab').style.display = t===tab ? 'block' : 'none';
+  });
+  if(tab==='overview') renderAdminOverview();
+  if(tab==='calendar'){ adminCursorDate = new Date(); renderAdmin(); }
+  if(tab==='closed') renderClosedList();
+  if(tab==='users') renderUserList();
+  if(tab==='export') populateExportSelect();
+}
+
+/* ---- Encerramentos ---- */
+function renderClosedList(){
+  const closed = state.admin.closed;
+  document.getElementById('closed-list').innerHTML = closed.length ? closed.map(function(c,i){
+    const sp=c.start.split('-'), ep=c.end.split('-');
+    return '<div class="closed-item"><div class="user-item-left"><span class="closed-item-name">'+c.name+'</span>'+
+           '<span class="closed-item-dates">'+sp[2]+'/'+sp[1]+'/'+sp[0]+' → '+ep[2]+'/'+ep[1]+'/'+ep[0]+'</span></div>'+
+           '<button class="btn-remove-closed" onclick="removeClosed('+i+')">✕</button></div>';
+  }).join('') : '<p style="font-size:13px;color:var(--color-text-secondary)">Sem encerramentos.</p>';
+}
+async function addClosed(){
+  const name=document.getElementById('closed-name').value.trim();
+  const start=document.getElementById('closed-start').value;
+  const end=document.getElementById('closed-end').value;
+  const err=document.getElementById('closed-error'); err.style.display='none';
+  if(!name||!start||!end){ err.textContent='Preenche todos os campos'; err.style.display='block'; return; }
+  if(end<start){ err.textContent='Data fim deve ser depois do início'; err.style.display='block'; return; }
+  try{
+    const res = await rpc('gsAddClosedPeriod', name, start, end);
+    if(res.error){ err.textContent=res.error; err.style.display='block'; return; }
+    state.admin.closed = res.closed; state.closed = res.closed;
+    document.getElementById('closed-name').value='';
+    document.getElementById('closed-start').value='';
+    document.getElementById('closed-end').value='';
+    renderClosedList(); showToast('Encerramento adicionado');
+  }catch(e){ err.textContent='Erro: '+(e.message||e); err.style.display='block'; }
+}
+async function removeClosed(i){
+  try{
+    const res = await rpc('gsRemoveClosedPeriod', i);
+    state.admin.closed = res.closed; state.closed = res.closed;
+    renderClosedList(); showToast('Encerramento removido');
+  }catch(e){ showToast('Erro: '+(e.message||e), true); }
+}
+
+/* ---- Utilizadores ---- */
+function renderUserList(){
+  let html='';
+  state.admin.users.forEach(function(u){
+    html += '<div class="user-item"><div class="user-item-left"><span class="user-item-name">'+u.name+'</span><span class="user-item-email">'+u.email+'</span></div>'+
+      '<div class="user-item-right"><span class="badge-active">Ativo</span><button class="btn-remove" onclick="removeUser(\''+u.email+'\')">🗑️</button></div></div>';
+  });
+  state.admin.invited.forEach(function(u){
+    html += '<div class="user-item"><div class="user-item-left"><span class="user-item-name">'+u.name+'</span><span class="user-item-email">'+u.email+'</span></div>'+
+      '<div class="user-item-right"><span class="badge-pending">Pendente</span><button class="btn-remove" onclick="removeInvite(\''+u.email+'\')">✕</button></div></div>';
+  });
+  document.getElementById('user-list').innerHTML = html || '<p style="font-size:13px;color:var(--color-text-secondary)">Sem utilizadores.</p>';
+}
+async function addUser(){
+  const name=document.getElementById('new-user-name').value.trim();
+  const email=document.getElementById('new-user-email').value.trim().toLowerCase();
+  const err=document.getElementById('add-user-error'), ok=document.getElementById('add-user-ok');
+  err.style.display='none'; ok.style.display='none';
+  if(!name||!email){ err.textContent='Preenche nome e email'; err.style.display='block'; return; }
+  try{
+    const res = await rpc('gsAddInvite', name, email);
+    if(res.error){ err.textContent=res.error; err.style.display='block'; return; }
+    state.admin.invited.push({email:email, name:name});
+    document.getElementById('new-user-name').value=''; document.getElementById('new-user-email').value='';
+    ok.textContent = name+' convidado.'; ok.style.display='block';
+    renderUserList();
+  }catch(e){ err.textContent='Erro: '+(e.message||e); err.style.display='block'; }
+}
+function removeUser(email){
+  openPassModal(async function(){
+    try{
+      await rpc('gsRemoveUser', email);
+      state.admin.users = state.admin.users.filter(function(u){return u.email!==email;});
+      state.admin.employees = state.admin.employees.filter(function(u){return u.email!==email;});
+      delete state.admin.entriesByEmail[email];
+      delete state.admin.minEntriesByEmail[email];
+      delete state.admin.maxExitsByEmail[email];
+      renderUserList(); renderAdminOverview();
+      showToast('Utilizador removido');
+    }catch(e){ showToast('Erro: '+(e.message||e), true); }
+  });
+}
+async function removeInvite(email){
+  try{
+    await rpc('gsRemoveInvite', email);
+    state.admin.invited = state.admin.invited.filter(function(u){return u.email!==email;});
+    renderUserList(); showToast('Convite cancelado');
+  }catch(e){ showToast('Erro: '+(e.message||e), true); }
+}
+
+/* ---- Exportação ---- */
+function populateExportSelect(){
+  const sel=document.getElementById('export-user'); sel.innerHTML='';
+  state.admin.employees.forEach(function(u){
+    const o=document.createElement('option'); o.value=u.email; o.textContent=u.name; sel.appendChild(o);
+  });
+  const all=document.createElement('option'); all.value='all'; all.textContent='Todos'; sel.appendChild(all);
+  // Popular seletor de mês para envio de teste (últimos 12 meses + mês atual)
+  const mSel = document.getElementById('summary-test-month');
+  if(mSel){
+    mSel.innerHTML='';
+    const now = new Date();
+    for(let i=0; i<12; i++){
+      let m = now.getMonth()-i, y = now.getFullYear();
+      if(m<0){m+=12;y--;}
+      const val = y+'-'+String(m).padStart(2,'0');
+      const label = MONTH_NAMES_PT[m]+' '+y + (i===0?' (mês atual)':'');
+      const o=document.createElement('option'); o.value=val; o.textContent=label; mSel.appendChild(o);
+    }
+  }
+  refreshMonthlySummaryStatus();
+}
+
+/* ============================ RESUMO POR EMAIL ============================ */
+
+async function refreshMonthlySummaryStatus(){
+  const statusEl = document.getElementById('monthly-summary-status');
+  const sel = document.getElementById('summary-frequency');
+  try{
+    const res = await rpc('gsGetSummaryFrequency');
+    const freq = (res && res.frequency) || 'none';
+    if(sel) sel.value = freq;
+    const labels = { none:'⚪ Desativado.', weekly:'🟢 Ativo — envia toda segunda-feira.', monthly:'🟢 Ativo — envia no dia 1 de cada mês.', yearly:'🟢 Ativo — envia no dia 1 de janeiro.' };
+    if(statusEl) statusEl.textContent = labels[freq] || '';
+  }catch(e){
+    if(statusEl) statusEl.textContent = 'Não foi possível verificar o estado.';
+  }
+}
+
+async function onSummaryFrequencyChange(){
+  const sel = document.getElementById('summary-frequency');
+  const statusEl = document.getElementById('monthly-summary-status');
+  const freq = sel.value;
+  try{
+    const res = await rpc('gsSetSummaryFrequency', freq);
+    if(!res || !res.success){ showToast((res&&res.error)||'Erro ao guardar', true); return; }
+    const labels = { none:'⚪ Desativado.', weekly:'🟢 Ativo — envia toda segunda-feira.', monthly:'🟢 Ativo — envia no dia 1 de cada mês.', yearly:'🟢 Ativo — envia no dia 1 de janeiro.' };
+    if(statusEl) statusEl.textContent = labels[freq] || '';
+    showToast(freq==='none' ? 'Envio desativado' : 'Periodicidade guardada');
+  }catch(e){
+    showToast('Erro: '+(e.message||e), true);
+  }
+}
+
+async function sendMonthlySummaryNow(){
+  try{
+    const res = await rpc('gsSendMonthlySummariesNow');
+    if(!res || !res.success){ showToast((res&&res.error)||'Erro ao enviar', true); return; }
+    showToast('Resumos de '+res.monthLabel+' enviados a '+res.employees+' funcionário(s).');
+  }catch(e){
+    showToast('Erro: '+(e.message||e), true);
+  }
+}
+function downloadText(filename, text, mime){
+  // BOM UTF-8: sem isto, o Excel no Windows abre acentos como "JoÃ£o"/"NÃ£o".
+  const blob = new Blob(['\uFEFF'+text], {type: mime+';charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+}
+/* ============================ EXPORTAÇÃO ============================ */
+
+function onExportPeriodChange(){
+  const period = document.getElementById('export-period').value;
+  const detail = document.getElementById('export-period-detail');
+  const startDate = new Date(START_DATE + 'T00:00:00');
+  const now = new Date();
+
+  if(period === 'month'){
+    // Só meses desde START_DATE até ao mês atual
+    let html = '<div style="max-height:180px;overflow-y:auto;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);padding:6px 8px;background:var(--color-background-primary)">';
+    let first = true;
+    let m = now.getMonth(), y = now.getFullYear();
+    const startY = startDate.getFullYear(), startM = startDate.getMonth();
+    while(y > startY || (y === startY && m >= startM)){
+      const val = y+'-'+String(m+1).padStart(2,'0');
+      const label = MONTH_NAMES_PT[m]+' '+y+(first?' (atual)':'');
+      html += `<label style="display:flex;align-items:center;gap:7px;padding:4px 2px;font-size:13px;cursor:pointer">
+        <input type="checkbox" class="export-month-cb" value="${val}" ${first?'checked':''}> ${label}
+      </label>`;
+      first = false;
+      m--; if(m<0){m=11;y--;}
+    }
+    html += '</div><p style="font-size:11px;color:var(--color-text-secondary);margin-top:5px">Podes selecionar vários meses.</p>';
+    detail.innerHTML = html;
+    detail.style.display = 'block';
+
+  } else if(period === 'week'){
+    // Segunda-feira da semana do START_DATE
+    const startDay = startDate.getDay();
+    const firstMonday = new Date(startDate);
+    firstMonday.setDate(startDate.getDate() - (startDay===0 ? 6 : startDay-1));
+
+    // Segunda-feira desta semana
+    const day = now.getDay();
+    const thisMonday = new Date(now);
+    thisMonday.setDate(now.getDate() - (day===0 ? 6 : day-1));
+
+    let html = '<div style="max-height:180px;overflow-y:auto;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);padding:6px 8px;background:var(--color-background-primary)">';
+    let first = true;
+    const cursor = new Date(thisMonday);
+    while(cursor >= firstMonday){
+      const wEnd = new Date(cursor); wEnd.setDate(cursor.getDate()+4);
+      const fmt = d => String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0');
+      const val = cursor.getFullYear()+'-'+String(cursor.getMonth()+1).padStart(2,'0')+'-'+String(cursor.getDate()).padStart(2,'0');
+      const label = (first?'Esta semana: ':'')+fmt(cursor)+' – '+fmt(wEnd)+'/'+wEnd.getFullYear();
+      html += `<label style="display:flex;align-items:center;gap:7px;padding:4px 2px;font-size:13px;cursor:pointer">
+        <input type="checkbox" class="export-week-cb" value="week:${val}" ${first?'checked':''}> ${label}
+      </label>`;
+      first = false;
+      cursor.setDate(cursor.getDate()-7);
+    }
+    html += '</div><p style="font-size:11px;color:var(--color-text-secondary);margin-top:5px">Podes selecionar várias semanas.</p>';
+    detail.innerHTML = html;
+    detail.style.display = 'block';
+
+  } else {
+    detail.innerHTML = '';
+    detail.style.display = 'none';
+  }
+}
+
+function getExportPeriodValue(){
+  const period = document.getElementById('export-period').value;
+  if(period === 'month'){
+    const checked = Array.from(document.querySelectorAll('.export-month-cb:checked')).map(function(cb){ return 'month:'+cb.value; });
+    return checked.length ? checked.join(',') : 'current';
+  }
+  if(period === 'week'){
+    const checked = Array.from(document.querySelectorAll('.export-week-cb:checked')).map(function(cb){ return cb.value; });
+    return checked.length ? checked.join(',') : 'current';
+  }
+  return period;
+}
+
+async function exportTXT(){
+  const userSel=document.getElementById('export-user').value;
+  const period=getExportPeriodValue();
+  try{
+    const res = await rpc('gsExportData', userSel, period);
+    downloadText('relatorio_horas_'+res.periodFileTag+'.txt', res.txt, 'text/plain');
+    showToast('Relatório exportado!');
+  }catch(e){ showToast('Erro: '+(e.message||e), true); }
+}
+async function exportPDF(){
+  const userSel=document.getElementById('export-user').value;
+  const period=getExportPeriodValue();
+  showToast('A gerar PDF, aguarda...');
+  try{
+    const res = await rpc('gsExportPDF', userSel, period);
+    if(!res || !res.ok){ showToast((res&&res.error)||'Erro ao gerar PDF', true); return; }
+    const bytes = atob(res.base64);
+    const arr = new Uint8Array(bytes.length);
+    for(let i=0;i<bytes.length;i++) arr[i]=bytes.charCodeAt(i);
+    const blob = new Blob([arr], {type:'application/pdf'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href=url; a.download=res.filename;
+    document.body.appendChild(a); a.click();
+    setTimeout(function(){ document.body.removeChild(a); URL.revokeObjectURL(url); }, 1000);
+    showToast('PDF exportado!');
+  }catch(e){ showToast('Erro: '+(e.message||e), true); }
+}
+
+/* ============================ AUTENTICAÇÃO ============================ */
+
+function resetUserState(){
+  state.entries={}; state.comments={}; state.closed=[];
+  view='month'; cursorDate=new Date();
+  statsVisible=false; statsView='month'; monthsExpanded=false;
+  selectedDays.clear(); shiftAnchor=null;
+  undoStack=[]; redoStack=[]; updateUndoRedoBtns();
+  document.getElementById('stats-panel').style.display='none';
+}
+
+/* ============================ SESSÃO PERSISTENTE (localStorage) ============================ */
+// Mantém a sessão entre refrescos da página (F5); só termina ao clicar em "Sair".
+const SESSION_KEY = 'banco_horas_session';
+function saveSession(email, pass){
+  try{ localStorage.setItem(SESSION_KEY, JSON.stringify({email: email, pass: pass})); }catch(e){}
+}
+function clearSession(){
+  try{ localStorage.removeItem(SESSION_KEY); }catch(e){}
+}
+
+// Aplica o resultado de gsAuthenticate (login normal ou restauro de sessão)
+function applyAuthResult(res){
+  state.user = res.user;
+  if(res.user.role==='admin'){
+    const navName=document.getElementById('admin-nav-name'); if(navName) navName.textContent = res.user.name;
+    const navAvatar=document.getElementById('admin-nav-avatar'); if(navAvatar) navAvatar.textContent = initials(res.user.name);
+    adminSelectedEmail=null; adminView='month'; adminCursorDate=new Date();
+    showScreen('admin-screen');
+    if(res.admin){
+      // Bootstrap já veio junto com o login — poupa uma 2ª chamada ao servidor.
+      state.admin = res.admin;
+      setAdminTab('overview');
+    } else {
+      // Fallback: pede o bootstrap em separado (com retries), como antes.
+      state.admin = { employees: [], entriesByEmail: {}, minEntriesByEmail: {}, maxExitsByEmail: {}, commentsByEmail: {}, folgaStatusByEmail: {}, pendingRequests: [], closed: [], invited: [], users: [] };
+      setAdminTab('overview');
+      loadAdminBootstrap();
+    }
+  } else {
+    resetUserState();
+    state.entries = res.entries || {};
+    state.comments = res.comments || {};
+    state.closed = res.closed || []; state.minEntries = res.minEntries || {}; state.maxExits = res.maxExits || {}; state.folgaStatus = res.folgaStatus || {};
+    document.getElementById('user-avatar').textContent = initials(state.user.name);
+    document.getElementById('user-display').textContent = state.user.name;
+    cursorDate = new Date();
+    showScreen('dashboard-screen');
+    render();
+  }
+}
+
+// Tenta repor a sessão guardada (chamado uma vez, ao carregar a página).
+// Devolve true se conseguiu repor (e mudou de ecrã), false caso contrário.
+async function tryRestoreSession(){
+  let saved;
+  try{ saved = JSON.parse(localStorage.getItem(SESSION_KEY)); }catch(e){ saved = null; }
+  if(!saved || !saved.email || !saved.pass) return false;
+  try{
+    const res = await rpc('gsAuthenticate', {email: saved.email, pass: saved.pass});
+    if(!res || !res.ok){ clearSession(); return false; }
+    applyAuthResult(res);
+    return true;
+  }catch(e){ return false; }
+}
+
+async function doLogin(){
+  const email=document.getElementById('login-email').value.trim().toLowerCase();
+  const pass=document.getElementById('login-pass').value;
+  const err=document.getElementById('login-error'); err.style.display='none';
+  if(!email || !pass){ err.textContent='Preenche email e palavra-passe'; err.style.display='block'; return; }
+  const btn=document.getElementById('login-btn');
+  setBtnLoading(btn,true);
+  try{
+    const res = await rpc('gsAuthenticate', {email: email, pass: pass});
+    if(!res.ok){ err.textContent=res.error||'Erro ao entrar'; err.style.display='block'; return; }
+    saveSession(email, pass);
+    applyAuthResult(res);
+  }catch(e){
+    err.textContent='Erro de ligação: '+(e.message||e); err.style.display='block';
+  }finally{
+    setBtnLoading(btn,false);
+  }
+}
+
+async function checkSignupEmail(){
+  const email=document.getElementById('signup-email').value.trim().toLowerCase();
+  const err=document.getElementById('signup-error'); err.style.display='none';
+  if(!email){ err.textContent='Introduz o teu email'; err.style.display='block'; return; }
+  const btn=document.getElementById('signup-btn');
+  setBtnLoading(btn,true);
+  try{
+    const res = await rpc('gsCheckSignupEmail', email);
+    if(!res.authorized){ err.textContent=res.error||'Email não autorizado'; err.style.display='block'; return; }
+    state.pendingEmail = email;
+    document.getElementById('firstaccess-email-label').textContent = email;
+    document.getElementById('fa-name').value = res.name || '';
+    document.getElementById('fa-pass').value=''; document.getElementById('fa-pass2').value='';
+    document.getElementById('fa-error').style.display='none';
+    buildTimeOptions(document.getElementById('fa-entry'), '09:00');
+    buildTimeOptions(document.getElementById('fa-exit'), '13:00');
+    showScreen('firstaccess-screen');
+  }catch(e){
+    err.textContent='Erro de ligação: '+(e.message||e); err.style.display='block';
+  }finally{
+    setBtnLoading(btn,false);
+  }
+}
+
+async function doFirstAccess(){
+  const name=document.getElementById('fa-name').value.trim();
+  const pass=document.getElementById('fa-pass').value, pass2=document.getElementById('fa-pass2').value;
+  const entry=document.getElementById('fa-entry').value, exit=document.getElementById('fa-exit').value;
+  const err=document.getElementById('fa-error'); err.style.display='none';
+  if(!name){ err.textContent='Introduz o teu nome'; err.style.display='block'; return; }
+  if(pass.length<4){ err.textContent='Mínimo 4 caracteres'; err.style.display='block'; return; }
+  if(pass!==pass2){ err.textContent='As palavras-passe não coincidem'; err.style.display='block'; return; }
+  if(toMins(exit)<=toMins(entry)){ err.textContent='Saída deve ser depois da entrada'; err.style.display='block'; return; }
+
+  const btn=document.getElementById('fa-btn');
+  setBtnLoading(btn,true);
+  try{
+    const res = await rpc('gsCreateAccount', state.pendingEmail, name, pass, entry, exit);
+    if(!res.success){ err.textContent=res.error||'Erro ao criar conta'; err.style.display='block'; return; }
+    saveSession(state.pendingEmail, pass);
+    state.user = res.user;
+    resetUserState();
+    state.entries = res.entries || {};
+    state.comments = res.comments || {};
+    state.closed = res.closed || []; state.minEntries = res.minEntries || {}; state.maxExits = res.maxExits || {}; state.folgaStatus = res.folgaStatus || {};
+    document.getElementById('user-avatar').textContent = initials(state.user.name);
+    document.getElementById('user-display').textContent = state.user.name;
+    cursorDate = new Date();
+    showScreen('dashboard-screen');
+    render();
+    showToast('Conta criada!');
+  }catch(e){
+    err.textContent='Erro de ligação: '+(e.message||e); err.style.display='block';
+  }finally{
+    setBtnLoading(btn,false);
+  }
+}
+
+async function doRecover(){
+  const email=document.getElementById('recover-email').value.trim().toLowerCase();
+  const err=document.getElementById('recover-error'), ok=document.getElementById('recover-ok');
+  err.style.display='none'; ok.style.display='none';
+  if(!email){ err.textContent='Introduz o teu email'; err.style.display='block'; return; }
+  const btn=document.getElementById('recover-btn');
+  setBtnLoading(btn,true);
+  try{
+    const res = await rpc('gsSendRecoveryCode', email);
+    if(!res.success){ err.textContent=res.error||'Erro ao enviar código'; err.style.display='block'; return; }
+    ok.textContent = 'Código enviado para '+email+'. Verifica a tua caixa de entrada (e spam).';
+    ok.style.display='block';
+  }catch(e){
+    err.textContent='Erro de ligação: '+(e.message||e); err.style.display='block';
+  }finally{
+    setBtnLoading(btn,false);
+  }
+}
+
+async function doResetPass(){
+  const email=document.getElementById('recover-email').value.trim().toLowerCase();
+  const code=document.getElementById('recover-code').value.trim();
+  const newpass=document.getElementById('recover-newpass').value;
+  const err=document.getElementById('recover-error2'), ok=document.getElementById('recover-ok');
+  err.style.display='none';
+  if(!email||!code){ err.textContent='Preenche o email e o código recebido'; err.style.display='block'; return; }
+  const btn=document.getElementById('reset-btn');
+  setBtnLoading(btn,true);
+  try{
+    const res = await rpc('gsResetPassword', email, code, newpass);
+    if(!res.success){ err.textContent=res.error||'Erro'; err.style.display='block'; return; }
+    ok.textContent = 'Palavra-passe alterada! Já podes fazer login.'; ok.style.display='block';
+    setTimeout(function(){ showScreen('login-screen'); ok.style.display='none'; }, 2000);
+  }catch(e){
+    err.textContent='Erro de ligação: '+(e.message||e); err.style.display='block';
+  }finally{
+    setBtnLoading(btn,false);
+  }
+}
+
+function doLogout(){
+  clearSession();
+  state.user=null; state.admin=null;
+  resetUserState();
+  document.getElementById('login-email').value='';
+  document.getElementById('login-pass').value='';
+  document.getElementById('login-error').style.display='none';
+  showScreen('login-screen');
+}
+
+/* ============================ DEFINIÇÕES ============================ */
+
+function goSettings(){
+  document.getElementById('cp-current').value='';
+  document.getElementById('cp-new').value='';
+  document.getElementById('cp-confirm').value='';
+  document.getElementById('cp-error').style.display='none';
+  document.getElementById('cp-ok').style.display='none';
+  document.getElementById('settings-user-label').textContent = state.user.name;
+  document.getElementById('cp-name').value = state.user.name;
+  const isAdmin = state.user.role==='admin';
+  document.getElementById('cp-email-section').style.display = isAdmin ? 'block' : 'none';
+  document.getElementById('cp-schedule-section').style.display = isAdmin ? 'none' : 'block';
+  if(isAdmin){
+    document.getElementById('cp-email').value = state.user.email;
+  } else {
+    buildTimeOptions(document.getElementById('cp-entry'), state.user.defaultEntry||'09:00');
+    buildTimeOptions(document.getElementById('cp-exit'), state.user.defaultExit||'13:00');
+  }
+  showScreen('settings-screen');
+}
+function backToDashboard(){
+  if(state.user.role==='admin'){ showScreen('admin-screen'); renderAdminOverview(); }
+  else { showScreen('dashboard-screen'); render(); }
+}
+async function doSaveSettings(){
+  const cur=document.getElementById('cp-current').value, nw=document.getElementById('cp-new').value, conf=document.getElementById('cp-confirm').value;
+  const err=document.getElementById('cp-error'), ok=document.getElementById('cp-ok');
+  err.style.display='none'; ok.style.display='none';
+  if(nw || conf || cur){
+    if(nw.length<4){ err.textContent='A nova palavra-passe deve ter pelo menos 4 caracteres'; err.style.display='block'; return; }
+    if(nw!==conf){ err.textContent='As palavras-passe não coincidem'; err.style.display='block'; return; }
+  }
+  const btn=document.getElementById('cp-btn');
+  setBtnLoading(btn,true);
+  try{
+    if(state.user.role==='admin'){
+      const newName=document.getElementById('cp-name').value.trim();
+      const newEmail=document.getElementById('cp-email').value.trim().toLowerCase();
+      if(!newName){ err.textContent='Introduz um nome'; err.style.display='block'; return; }
+      if(!newEmail || newEmail.indexOf('@')<0){ err.textContent='Introduz um email válido'; err.style.display='block'; return; }
+      const emailChanging = newEmail !== state.user.email;
+      if((emailChanging || nw) && !cur){ err.textContent='Introduz a palavra-passe atual para confirmar'; err.style.display='block'; return; }
+      const res = await rpc('gsUpdateAdminEmail', state.user.email, newEmail, cur, nw, newName);
+      if(!res.success){ err.textContent=res.error||'Erro ao guardar'; err.style.display='block'; return; }
+      state.user.email = res.email;
+      state.user.name = res.name;
+      if(emailChanging || nw) saveSession(res.email, nw || cur);
+      const navName=document.getElementById('admin-nav-name'); if(navName) navName.textContent = state.user.name;
+      const navAvatar=document.getElementById('admin-nav-avatar'); if(navAvatar) navAvatar.textContent = initials(state.user.name);
+    } else {
+      const newName=document.getElementById('cp-name').value.trim();
+      const entry=document.getElementById('cp-entry').value, exit=document.getElementById('cp-exit').value;
+      if(!newName){ err.textContent='Introduz um nome'; err.style.display='block'; return; }
+      if(toMins(exit)<=toMins(entry)){ err.textContent='Saída deve ser depois da entrada'; err.style.display='block'; return; }
+      const res = await rpc('gsSaveSettings', state.user.email, entry, exit, cur, nw, newName);
+      if(!res.success){ err.textContent=res.error||'Erro ao guardar'; err.style.display='block'; return; }
+      state.user.defaultEntry=entry; state.user.defaultExit=exit;
+      state.user.name = newName;
+      if(nw) saveSession(state.user.email, nw);
+      document.getElementById('user-display').textContent = state.user.name;
+      document.getElementById('user-avatar').textContent = initials(state.user.name);
+    }
+    ok.style.display='block';
+    setTimeout(backToDashboard, 1000);
+  }catch(e){
+    err.textContent='Erro de ligação: '+(e.message||e); err.style.display='block';
+  }finally{
+    setBtnLoading(btn,false);
+  }
+}
+
+/* ============================ INICIALIZAÇÃO ============================ */
+
+document.addEventListener('DOMContentLoaded', function(){
+  buildTimeOptions(document.getElementById('fa-entry'), '09:00');
+  buildTimeOptions(document.getElementById('fa-exit'), '13:00');
+  buildTimeOptions(document.getElementById('cp-entry'), '09:00');
+  buildTimeOptions(document.getElementById('cp-exit'), '13:00');
+  buildTimeOptions(document.getElementById('ms-entry'), '09:00');
+  buildTimeOptions(document.getElementById('ms-exit'), '13:00');
+
+  document.getElementById('login-pass').addEventListener('keydown', function(e){
+    if(e.key==='Enter') doLogin();
+  });
+  document.getElementById('login-email').addEventListener('keydown', function(e){
+    if(e.key==='Enter') doLogin();
+  });
+
+  document.addEventListener('keydown', function(e){
+    if(e.key==='Escape'){
+      closeModal(); closeCmt(); closeCtxMenu(); closeMultiSel(); clearSelection();
+      closePicker('user-picker','picker-overlay-user');
+      closePicker('admin-picker','picker-overlay-admin');
+    }
+    if((e.ctrlKey||e.metaKey) && e.key.toLowerCase()==='z' && !e.shiftKey){
+      e.preventDefault(); doUndo();
+    }
+    if((e.ctrlKey||e.metaKey) && (e.key.toLowerCase()==='y' || (e.key.toLowerCase()==='z' && e.shiftKey))){
+      e.preventDefault(); doRedo();
+    }
+  });
+
+  document.addEventListener('click', function(){ closeCtxMenu(); });
+
+  tryRestoreSession().finally(function(){
+    document.getElementById('session-loading').style.display = 'none';
+  });
+});
+</script>
+</body>
+</html>
